@@ -41,6 +41,19 @@ for (Class cls: classes)
   System.out.println("- " + cls.getName());
 ```
 
+Generates this output:
+
+```
+Abstract super class: nz.ac.waikato.cms.locator.example.AbstractAncestor
+- nz.ac.waikato.cms.locator.example.pkgA.ConcreteClassA
+- nz.ac.waikato.cms.locator.example.pkgA.ConcreteClassB
+
+Interface: nz.ac.waikato.cms.locator.example.SomeInterface
+- nz.ac.waikato.cms.locator.example.pkgA.InterfaceImplA
+- nz.ac.waikato.cms.locator.example.pkgB.InterfaceImplB
+- nz.ac.waikato.cms.locator.example.pkgB.InterfaceImplC
+```
+
 ## Maven
 
 Add the following dependency to your `pom.xml`:
