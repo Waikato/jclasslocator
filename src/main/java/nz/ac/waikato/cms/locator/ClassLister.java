@@ -95,7 +95,7 @@ public class ClassLister
   /**
    * Initializes the classlister.
    */
-  private ClassLister() {
+  protected ClassLister() {
     super();
 
     m_Packages  = load("nz/ac/waikato/cms/locator/ClassLister.props");
