@@ -54,6 +54,22 @@ Interface: nz.ac.waikato.cms.locator.example.SomeInterface
 - nz.ac.waikato.cms.locator.example.pkgB.InterfaceImplC
 ```
 
+## Logging
+
+Logging is by default restricted to `WARNING` or higher (like `SEVERE`).
+However, you can enable logging for debugging purposes via environment 
+variables:
+
+* `nz.ac.waikato.cms.locator.ClassCache.LOGLEVEL`
+* `nz.ac.waikato.cms.locator.ClassLister.LOGLEVEL`
+* `nz.ac.waikato.cms.locator.ClassLocator.LOGLEVEL`
+* `nz.ac.waikato.cms.locator.ClassPathTraversal.LOGLEVEL`
+
+These environment variables can take the following values:
+```
+{OFF|SEVERE|WARNING|INFO|CONFIG|FINE|FINER|FINEST}
+```
+
 ## Maven
 
 Add the following dependency to your `pom.xml`:
