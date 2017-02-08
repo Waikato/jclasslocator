@@ -4,6 +4,32 @@ Java library for analyzing the classpath of an application, e.g., used to
 determine dynamic class hierarchies (simply add a jar with additional classes
 in packages that the `ClassLister` monitors and they are automatically located).  
 
+## Class hierarchies
+
+Defining class hierarchies is very easy. Just supply a `java.util.Properties`
+object to the `ClassLister.setPackages(Properties)` method that lists for
+each superclass (or interface) the packages that need inspecting.
+
+Here is the basic format:
+
+```INI
+class.name=package1,package2,...
+```
+
+## Blacklisting
+
+Blacklisting of classes is extremely easy. You just need to supply a
+`java.util.Properties` object to the `ClassLister.setBlacklist(Properties)`
+method that lists a comma-separated list of regular expressions for matching
+class names to exclude. The simplest is to use the full class name of the
+class to exclude.
+
+Here is the basic format:
+
+```INI
+class.name=regexp1,regexp2,...
+```
+
 ## Example (manual setup)
 
 The following code is taken from `nz.ac.waikato.cms.locator.example.ClassListerExample`:
@@ -102,20 +128,6 @@ System.out.println("\nInterface: " + SomeInterface.class.getName());
 classes = lister.getClasses(SomeInterface.class);
 for (Class cls: classes)
   System.out.println("- " + cls.getName());
-```
-
-## Blacklisting
-
-Blacklisting of classes is extremely easy. You just need to supply a
-`java.util.Properties` object to the `ClassLister.setBlacklist(Properties)`
-method that lists a comma-separated list of regular expressions for matching
-class names to exclude. The simplest is to use the full class name of the
-class to exclude.
-
-Here is the basic format:
-
-```INI
-class.name=regexp1,regexp2,...
 ```
 
 
