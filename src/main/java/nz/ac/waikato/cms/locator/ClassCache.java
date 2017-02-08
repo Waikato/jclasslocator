@@ -33,6 +33,10 @@ import java.util.logging.Logger;
 
 /**
  * A class that stores all classes on the classpath.
+ * <br>
+ * Use "nz.ac.waikato.cms.locator.ClassCache.LOGLEVEL" with a value of
+ * "{OFF|SEVERE|WARNING|INFO|CONFIG|FINE|FINER|FINEST}" to set custom
+ * logging level.
  *
  * @author  fracpete (fracpete at waikato dot ac dot nz)
  * @version $Revision: 15272 $
@@ -142,8 +146,10 @@ public class ClassCache
    * @return		the logger
    */
   public synchronized Logger getLogger() {
-    if (m_Logger == null)
+    if (m_Logger == null) {
       m_Logger = Logger.getLogger(getClass().getName());
+      m_Logger.setLevel(LoggingHelper.getLevel(getClass()));
+    }
     return m_Logger;
   }
 

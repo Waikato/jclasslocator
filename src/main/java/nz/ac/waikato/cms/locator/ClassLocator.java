@@ -38,6 +38,10 @@ import java.util.logging.Logger;
  * This class is used for discovering classes that implement a certain
  * interface or a derived from a certain class. Based on the
  * <code>weka.core.ClassDiscovery</code> class.
+ * <br>
+ * Use "nz.ac.waikato.cms.locator.ClassLocator.LOGLEVEL" with a value of
+ * "{OFF|SEVERE|WARNING|INFO|CONFIG|FINE|FINER|FINEST}" to set custom
+ * logging level.
  *
  * @author FracPete (fracpete at waikato dot ac dot nz)
  * @version $Revision: 14943 $
@@ -90,8 +94,10 @@ public class ClassLocator
    * @return		the logger
    */
   public synchronized Logger getLogger() {
-    if (m_Logger == null)
+    if (m_Logger == null) {
       m_Logger = Logger.getLogger(getClass().getName());
+      m_Logger.setLevel(LoggingHelper.getLevel(getClass()));
+    }
     return m_Logger;
   }
 
@@ -366,6 +372,15 @@ public class ClassLocator
   }
 
   /**
+   * Returns a new instance of the {@link ClassCache}.
+   *
+   * @return		the instance
+   */
+  protected ClassCache newClassCache() {
+    return new ClassCache();
+  }
+
+  /**
    * initializes the cache for the classnames.
    */
   protected void initCache() {
@@ -376,7 +391,7 @@ public class ClassLocator
     if (m_BlackListed == null)
       m_BlackListed = new HashSet<>();
     if (m_Cache == null)
-      m_Cache = new ClassCache();
+      m_Cache = newClassCache();
   }
 
   /**

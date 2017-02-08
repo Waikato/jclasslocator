@@ -58,6 +58,10 @@ import java.util.regex.Pattern;
  * // use class lister
  * Class[] classes = lister.getClasses("my.SuperClass");
  * </pre>
+ * <br>
+ * Use "nz.ac.waikato.cms.locator.ClassLister.LOGLEVEL" with a value of
+ * "{OFF|SEVERE|WARNING|INFO|CONFIG|FINE|FINER|FINEST}" to set custom
+ * logging level.
  *
  * @author  fracpete (fracpete at waikato dot ac dot nz)
  * @version $Revision: 15209 $
@@ -159,8 +163,10 @@ public class ClassLister
    * @return		the logger
    */
   public synchronized Logger getLogger() {
-    if (m_Logger == null)
+    if (m_Logger == null) {
       m_Logger = Logger.getLogger(getClass().getName());
+      m_Logger.setLevel(LoggingHelper.getLevel(getClass()));
+    }
     return m_Logger;
   }
 
@@ -249,6 +255,15 @@ public class ClassLister
   }
 
   /**
+   * Returns the {@link ClassLocator} instance to use.
+   *
+   * @return		the instance
+   */
+  protected ClassLocator getClassLocator() {
+    return ClassLocator.getSingleton();
+  }
+
+  /**
    * Adds/appends a class hierarchy.
    *
    * @param superclass	the superclass
@@ -261,8 +276,8 @@ public class ClassLister
     int			i;
     Pattern		p;
 
-    names      = ClassLocator.getSingleton().findNames(superclass, packages);
-    classes    = ClassLocator.getSingleton().findClasses(superclass, packages);
+    names      = getClassLocator().findNames(superclass, packages);
+    classes    = getClassLocator().findClasses(superclass, packages);
     // remove blacklisted classes
     if (m_Blacklist.containsKey(superclass)) {
       try {
