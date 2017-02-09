@@ -93,6 +93,9 @@ public class ClassLister
   /** the properties with the blacklisted classes. */
   protected Properties m_Blacklist;
 
+  /** whether to allow only classes with the default constructor. */
+  protected boolean m_OnlyDefaultConstructor;
+
   /** the singleton. */
   protected static ClassLister m_Singleton;
 
@@ -168,6 +171,24 @@ public class ClassLister
       m_Logger.setLevel(LoggingHelper.getLevel(getClass()));
     }
     return m_Logger;
+  }
+
+  /**
+   * Sets whether to allow only classes with default constructor.
+   *
+   * @param value	true if only default allowed
+   */
+  public void setOnlyDefaultConstructor(boolean value) {
+    m_OnlyDefaultConstructor = value;
+  }
+
+  /**
+   * Returns whether to allow only classes with default constructor.
+   *
+   * @return		true if only default allowed
+   */
+  public boolean isOnlyDefaultConstructor() {
+    return m_OnlyDefaultConstructor;
   }
 
   /**
@@ -260,7 +281,13 @@ public class ClassLister
    * @return		the instance
    */
   protected ClassLocator getClassLocator() {
-    return ClassLocator.getSingleton();
+    ClassLocator  	result;
+
+    result = ClassLocator.getSingleton();
+    if (result.isOnlyDefaultConstructor() != isOnlyDefaultConstructor())
+      result.setOnlyDefaultConstructor(isOnlyDefaultConstructor());
+
+    return result;
   }
 
   /**
@@ -275,9 +302,11 @@ public class ClassLister
     String[]		patterns;
     int			i;
     Pattern		p;
+    ClassLocator	locator;
 
-    names      = getClassLocator().findNames(superclass, packages);
-    classes    = getClassLocator().findClasses(superclass, packages);
+    locator    = getClassLocator();
+    names      = locator.findNames(superclass, packages);
+    classes    = locator.findClasses(superclass, packages);
     // remove blacklisted classes
     if (m_Blacklist.containsKey(superclass)) {
       try {

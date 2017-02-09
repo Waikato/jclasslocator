@@ -68,6 +68,9 @@ public class ClassLocator
   /** the overall class cache. */
   protected ClassCache m_Cache;
 
+  /** whether to allow only classes with the default constructor. */
+  protected boolean m_OnlyDefaultConstructor;
+
   /** the singleton. */
   protected static ClassLocator m_Singleton;
 
@@ -99,6 +102,24 @@ public class ClassLocator
       m_Logger.setLevel(LoggingHelper.getLevel(getClass()));
     }
     return m_Logger;
+  }
+
+  /**
+   * Sets whether to allow only classes with default constructor.
+   *
+   * @param value	true if only default allowed
+   */
+  public void setOnlyDefaultConstructor(boolean value) {
+    m_OnlyDefaultConstructor = value;
+  }
+
+  /**
+   * Returns whether to allow only classes with default constructor.
+   *
+   * @return		true if only default allowed
+   */
+  public boolean isOnlyDefaultConstructor() {
+    return m_OnlyDefaultConstructor;
   }
 
   /**
@@ -294,13 +315,28 @@ public class ClassLocator
 	  }
 
 	  clsNew = Class.forName(result.get(i));
+
 	  // no abstract classes
 	  if (Modifier.isAbstract(clsNew.getModifiers())) {
 	    m_Cache.remove(result.get(i));
 	    result.remove(i);
+	    continue;
 	  }
+
+	  // only classes with default constructor?
+	  if (m_OnlyDefaultConstructor) {
+	    try {
+	      clsNew.getConstructor();
+	    }
+	    catch (Exception e) {
+	      m_Cache.remove(result.get(i));
+	      result.remove(i);
+	      continue;
+	    }
+	  }
+
 	  // must implement interface
-	  else if ( (cls.isInterface()) && (!hasInterface(cls, clsNew)) ) {
+	  if ( (cls.isInterface()) && (!hasInterface(cls, clsNew)) ) {
 	    result.remove(i);
 	  }
 	  // must be derived from class
