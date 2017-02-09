@@ -155,6 +155,6 @@ Add the following dependency to your `pom.xml`:
     <dependency>
       <groupId>com.github.waikato</groupId>
       <artifactId>jclasslocator</artifactId>
-      <version>0.0.4</version>
+      <version>0.0.5</version>
     </dependency>
 ```
