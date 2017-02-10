@@ -96,6 +96,9 @@ public class ClassLister
   /** whether to allow only classes with the default constructor. */
   protected boolean m_OnlyDefaultConstructor;
 
+  /** whether to allow only serializable classes. */
+  protected boolean m_OnlySerializable;
+
   /** the singleton. */
   protected static ClassLister m_Singleton;
 
@@ -105,50 +108,8 @@ public class ClassLister
   protected ClassLister() {
     super();
 
-    m_Packages  = load("nz/ac/waikato/cms/locator/ClassLister.props");
-    m_Blacklist = load("nz/ac/waikato/cms/locator/ClassLister.blacklist");
-  }
-
-  /**
-   * Loads the properties from the classpath.
-   *
-   * @param props	the path, e.g., "nz/ac/waikato/cms/locator/ClassLister.props"
-   * @return		the properties
-   */
-  public static Properties load(String props) {
-    return load(props, new Properties());
-  }
-
-  /**
-   * Loads the properties from the classpath.
-   *
-   * @param props	the path, e.g., "nz/ac/waikato/cms/locator/ClassLister.props"
-   * @return		the properties, the default ones if failed to load
-   */
-  public static Properties load(String props, Properties defProps) {
-    Properties		result;
-    InputStream		is;
-
-    result = new Properties(defProps);
-    is     = null;
-    try {
-      is = ClassLoader.getSystemResourceAsStream(props);
-      result.load(is);
-    }
-    catch (Exception e) {
-      result = defProps;
-    }
-    finally {
-      try {
-	if (is != null)
-	  is.close();
-      }
-      catch (Exception e) {
-	// ignored
-      }
-    }
-
-    return result;
+    setPackages(load("nz/ac/waikato/cms/locator/ClassLister.props"));
+    setBlacklist(load("nz/ac/waikato/cms/locator/ClassLister.blacklist"));
   }
 
   /**
@@ -189,6 +150,24 @@ public class ClassLister
    */
   public boolean isOnlyDefaultConstructor() {
     return m_OnlyDefaultConstructor;
+  }
+
+  /**
+   * Sets whether to allow only serializable classes.
+   *
+   * @param value	true if only serializable
+   */
+  public void setOnlySerializable(boolean value) {
+    m_OnlySerializable = value;
+  }
+
+  /**
+   * Returns whether to allow only serializable classes.
+   *
+   * @return		true if only serializable
+   */
+  public boolean isOnlySerializable() {
+    return m_OnlySerializable;
   }
 
   /**
@@ -286,6 +265,8 @@ public class ClassLister
     result = ClassLocator.getSingleton();
     if (result.isOnlyDefaultConstructor() != isOnlyDefaultConstructor())
       result.setOnlyDefaultConstructor(isOnlyDefaultConstructor());
+    if (result.isOnlySerializable() != isOnlySerializable())
+      result.setOnlySerializable(isOnlySerializable());
 
     return result;
   }
@@ -525,5 +506,47 @@ public class ClassLister
       m_Singleton = new ClassLister();
 
     return m_Singleton;
+  }
+
+  /**
+   * Loads the properties from the classpath.
+   *
+   * @param props	the path, e.g., "nz/ac/waikato/cms/locator/ClassLister.props"
+   * @return		the properties
+   */
+  public static Properties load(String props) {
+    return load(props, new Properties());
+  }
+
+  /**
+   * Loads the properties from the classpath.
+   *
+   * @param props	the path, e.g., "nz/ac/waikato/cms/locator/ClassLister.props"
+   * @return		the properties, the default ones if failed to load
+   */
+  public static Properties load(String props, Properties defProps) {
+    Properties		result;
+    InputStream		is;
+
+    result = new Properties(defProps);
+    is     = null;
+    try {
+      is = ClassLoader.getSystemResourceAsStream(props);
+      result.load(is);
+    }
+    catch (Exception e) {
+      result = defProps;
+    }
+    finally {
+      try {
+	if (is != null)
+	  is.close();
+      }
+      catch (Exception e) {
+	// ignored
+      }
+    }
+
+    return result;
   }
 }

@@ -71,6 +71,9 @@ public class ClassLocator
   /** whether to allow only classes with the default constructor. */
   protected boolean m_OnlyDefaultConstructor;
 
+  /** whether to allow only serializable classes. */
+  protected boolean m_OnlySerializable;
+
   /** the singleton. */
   protected static ClassLocator m_Singleton;
 
@@ -120,6 +123,24 @@ public class ClassLocator
    */
   public boolean isOnlyDefaultConstructor() {
     return m_OnlyDefaultConstructor;
+  }
+
+  /**
+   * Sets whether to allow only serializable classes.
+   *
+   * @param value	true if only serializable
+   */
+  public void setOnlySerializable(boolean value) {
+    m_OnlySerializable = value;
+  }
+
+  /**
+   * Returns whether to allow only serializable classes.
+   *
+   * @return		true if only serializable
+   */
+  public boolean isOnlySerializable() {
+    return m_OnlySerializable;
   }
 
   /**
@@ -329,6 +350,15 @@ public class ClassLocator
 	      clsNew.getConstructor();
 	    }
 	    catch (Exception e) {
+	      m_Cache.remove(result.get(i));
+	      result.remove(i);
+	      continue;
+	    }
+	  }
+
+	  // only serializable classes?
+	  if (m_OnlySerializable) {
+	    if (!ClassLocator.hasInterface(Serializable.class, clsNew)) {
 	      m_Cache.remove(result.get(i));
 	      result.remove(i);
 	      continue;
