@@ -13,7 +13,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
+/*
  * ClassCache.java
  * Copyright (C) 2010-2017 University of Waikato, Hamilton, New Zealand
  */
@@ -25,7 +25,10 @@ import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -380,13 +383,51 @@ public class ClassPathTraversal
   public void traverse(TraversalListener listener) {
     String		part;
     URLClassLoader 	sysLoader;
-    URL[] 		urls;
+    List<URL> 		urls;
     TraversalState	state;
+    String[] 		parts;
+    List<String> 	elements;
+    File		file;
+    File[]		jars;
 
-    state     = new TraversalState(listener);
-    sysLoader = (URLClassLoader) getClass().getClassLoader();
-    urls      = sysLoader.getURLs();
-    for (URL url: urls) {
+    // determine URLs of classpath
+    if (JavaVersion.atLeast9()) {
+      parts = System.getProperty("java.class.path").split(System.getProperty("path.separator"));
+      elements = new ArrayList<>();
+      for (String p: parts) {
+        if (p.endsWith("*")) {
+          file = new File(p.substring(0, p.length() - 1));
+          jars = file.listFiles(new FileFilter() {
+	    @Override
+	    public boolean accept(File pathname) {
+	      return pathname.isFile() && pathname.getName().toLowerCase().endsWith(".jar");
+	    }
+	  });
+          for (File jar: jars)
+            elements.add(jar.getAbsolutePath());
+	}
+	else {
+          elements.add(p);
+	}
+      }
+      urls = new ArrayList<>();
+      for (String el: elements) {
+        try {
+          file = new File(el);
+          urls.add(file.toURI().toURL());
+	}
+	catch (Exception e) {
+          System.err.println("[" + getClass().getName() + "] Failed to turn '" + el + "' into URL: " + e);
+	}
+      }
+    }
+    else {
+      sysLoader = (URLClassLoader) getClass().getClassLoader();
+      urls = new ArrayList<>(Arrays.asList(sysLoader.getURLs()));
+    }
+
+    state = new TraversalState(listener);
+    for (URL url : urls) {
       state.setURL(url);
       if (isLoggingEnabled())
 	getLogger().log(Level.INFO, "Classpath URL: " + url);
