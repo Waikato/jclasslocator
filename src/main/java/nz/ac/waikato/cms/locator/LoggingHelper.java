@@ -13,7 +13,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
+/*
  * LoggingHelper.java
  * Copyright (C) 2013-2017 University of Waikato, Hamilton, New Zealand
  */

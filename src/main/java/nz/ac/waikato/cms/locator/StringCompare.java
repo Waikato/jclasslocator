@@ -13,7 +13,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
+/*
  * StringCompare.java
  * Copyright (C) 2005-2017 University of Waikato, Hamilton, New Zealand
  */
