@@ -608,7 +608,33 @@ public class ClassLocator
   public static boolean hasInterface(Class intf, Class cls) {
     return intf.isAssignableFrom(cls);
   }
-  
+
+  /**
+   * Checks whether the "otherclass" is a subclass of the given "superclassOrIntf"
+   * or whether it implements "superclassOrIntf".
+   *
+   * @param superclassOrIntf      the superclass/interface to check against
+   * @param otherclass            this class is checked whether it is a subclass
+   *                              of the the superclass
+   * @return                      TRUE if "otherclass" is a true subclass or implements the interface
+   */
+  public static boolean matches(String superclassOrIntf, String otherclass) {
+    return isSubclass(superclassOrIntf, otherclass) || hasInterface(superclassOrIntf, otherclass);
+  }
+
+  /**
+   * Checks whether the "otherclass" is a subclass of the given "superclassOrIntf"
+   * or whether it implements "superclassOrIntf".
+   *
+   * @param superclassOrIntf      the superclass/interface to check against
+   * @param otherclass            this class is checked whether it is a subclass
+   *                              of the the superclass
+   * @return                      TRUE if "otherclass" is a true subclass or implements the interface
+   */
+  public static boolean matches(Class superclassOrIntf, Class otherclass) {
+    return isSubclass(superclassOrIntf, otherclass) || hasInterface(superclassOrIntf, otherclass);
+  }
+
   /**
    * Possible calls:
    * <ul>
