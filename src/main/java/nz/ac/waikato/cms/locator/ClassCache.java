@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -58,9 +57,6 @@ public class ClassCache
     /** for caching all classes on the class path (package-name &lt;-&gt; HashSet with classnames). */
     protected HashMap<String,HashSet<String>> m_NameCache;
 
-    /** for caching all classes on the class path (package-name &lt;-&gt; HashSet with classes). */
-    protected HashMap<String,HashSet<Class>> m_ClassCache;
-
     /** the logger in use. */
     protected transient Logger m_Logger;
 
@@ -69,7 +65,6 @@ public class ClassCache
      */
     public Listener() {
       m_NameCache  = new HashMap<>();
-      m_ClassCache = new HashMap<>();
     }
 
     /**
@@ -106,16 +101,6 @@ public class ClassCache
         m_NameCache.put(pkgname, new HashSet<>());
       names = m_NameCache.get(pkgname);
       names.add(classname);
-
-      if (!m_ClassCache.containsKey(pkgname))
-        m_ClassCache.put(pkgname, new HashSet<>());
-      classes = m_ClassCache.get(pkgname);
-      try {
-	classes.add(Class.forName(classname));
-      }
-      catch (Exception e) {
-        getLogger().log(Level.SEVERE, "Failed to instantiate: " + classname, e);
-      }
     }
 
     /**
@@ -126,15 +111,6 @@ public class ClassCache
     public HashMap<String,HashSet<String>> getNameCache() {
       return m_NameCache;
     }
-
-    /**
-     * Returns the class cache.
-     *
-     * @return		the cache
-     */
-    public HashMap<String,HashSet<Class>> getClassCache() {
-      return m_ClassCache;
-    }
   }
 
   /** the logger in use. */
@@ -142,9 +118,6 @@ public class ClassCache
 
   /** for caching all classes on the class path (package-name &lt;-&gt; HashSet with classnames). */
   protected HashMap<String,HashSet<String>> m_NameCache;
-
-  /** for caching all classes on the class path (package-name &lt;-&gt; HashSet with classes). */
-  protected HashMap<String,HashSet<Class>> m_ClassCache;
 
   /**
    * Initializes the cache.
@@ -218,19 +191,6 @@ public class ClassCache
   }
 
   /**
-   * Returns all the classes for the given package.
-   *
-   * @param pkgname	the package to get the classes for
-   * @return		the classes (sorted by name)
-   */
-  public HashSet<Class> getClasses(String pkgname) {
-    if (m_ClassCache.containsKey(pkgname))
-      return m_ClassCache.get(pkgname);
-    else
-      return new HashSet<>();
-  }
-
-  /**
    * Initializes the cache.
    */
   protected void initialize() {
@@ -242,7 +202,6 @@ public class ClassCache
     traversal.traverse(listener);
 
     m_NameCache  = listener.getNameCache();
-    m_ClassCache = listener.getClassCache();
   }
 
   /**
