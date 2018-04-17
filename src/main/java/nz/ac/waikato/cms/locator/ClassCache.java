@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -39,7 +40,6 @@ import java.util.logging.Logger;
  * logging level.
  *
  * @author  fracpete (fracpete at waikato dot ac dot nz)
- * @version $Revision: 15272 $
  */
 public class ClassCache
   implements Serializable {
@@ -51,7 +51,6 @@ public class ClassCache
    * For listening to the class traversal and populating the caches.
    *
    * @author  fracpete (fracpete at waikato dot ac dot nz)
-   * @version $Revision: 15272 $
    */
   public static class Listener
     implements TraversalListener {
@@ -62,12 +61,28 @@ public class ClassCache
     /** for caching all classes on the class path (package-name &lt;-&gt; HashSet with classes). */
     protected HashMap<String,HashSet<Class>> m_ClassCache;
 
+    /** the logger in use. */
+    protected transient Logger m_Logger;
+
     /**
      * Initializes the listener.
      */
     public Listener() {
       m_NameCache  = new HashMap<>();
       m_ClassCache = new HashMap<>();
+    }
+
+    /**
+     * Returns the logger in use.
+     *
+     * @return		the logger
+     */
+    public synchronized Logger getLogger() {
+      if (m_Logger == null) {
+	m_Logger = Logger.getLogger(getClass().getName());
+	m_Logger.setLevel(LoggingHelper.getLevel(getClass()));
+      }
+      return m_Logger;
     }
 
     /**
@@ -81,6 +96,7 @@ public class ClassCache
     public void traversing(String classname, URL classPathPart) {
       String		pkgname;
       HashSet<String>	names;
+      HashSet<Class>	classes;
 
       // classname and package
       pkgname = ClassPathTraversal.extractPackage(classname);
@@ -88,11 +104,18 @@ public class ClassCache
       // add to cache
       if (!m_NameCache.containsKey(pkgname))
         m_NameCache.put(pkgname, new HashSet<>());
+      names = m_NameCache.get(pkgname);
+      names.add(classname);
+
       if (!m_ClassCache.containsKey(pkgname))
         m_ClassCache.put(pkgname, new HashSet<>());
-      names = m_NameCache.get(pkgname);
-
-      names.add(classname);
+      classes = m_ClassCache.get(pkgname);
+      try {
+	classes.add(Class.forName(classname));
+      }
+      catch (Exception e) {
+        getLogger().log(Level.SEVERE, "Failed to instantiate: " + classname, e);
+      }
     }
 
     /**
