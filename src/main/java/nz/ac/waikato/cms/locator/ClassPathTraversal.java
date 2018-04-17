@@ -15,7 +15,7 @@
 
 /*
  * ClassCache.java
- * Copyright (C) 2010-2017 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2010-2018 University of Waikato, Hamilton, New Zealand
  */
 package nz.ac.waikato.cms.locator;
 
@@ -44,7 +44,6 @@ import java.util.logging.Logger;
  * logging level.
  *
  * @author  fracpete (fracpete at waikato dot ac dot nz)
- * @version $Revision: 15272 $
  */
 public class ClassPathTraversal
   implements Serializable {
@@ -56,7 +55,6 @@ public class ClassPathTraversal
    * For filtering classes.
    *
    * @author  fracpete (fracpete at waikato dot ac dot nz)
-   * @version $Revision: 15272 $
    */
   public static class ClassFileFilter
     implements FileFilter {
@@ -76,7 +74,6 @@ public class ClassPathTraversal
    * For filtering classes.
    *
    * @author  fracpete (fracpete at waikato dot ac dot nz)
-   * @version $Revision: 15272 $
    */
   public static class DirectoryFilter
     implements FileFilter {
@@ -96,7 +93,6 @@ public class ClassPathTraversal
    * Interface for classes that listen to the traversal of the classpath.
    *
    * @author  fracpete (fracpete at waikato dot ac dot nz)
-   * @version $Revision: 15272 $
    */
   public interface TraversalListener {
 
@@ -114,7 +110,6 @@ public class ClassPathTraversal
    * Container class for maintaining the state while traversing.
    *
    * @author  fracpete (fracpete at waikato dot ac dot nz)
-   * @version $Revision: 15272 $
    */
   public static class TraversalState {
 
@@ -248,20 +243,24 @@ public class ClassPathTraversal
 
     // check classes
     files = dir.listFiles(new ClassFileFilter());
-    for (File file: files) {
-      if (prefix == null)
-	traverse(file.getName(), state);
-      else
-	traverse(prefix + "." + file.getName(), state);
+    if (files != null) {
+      for (File file : files) {
+	if (prefix == null)
+	  traverse(file.getName(), state);
+	else
+	  traverse(prefix + "." + file.getName(), state);
+      }
     }
 
     // descend in directories
     files = dir.listFiles(new DirectoryFilter());
-    for (File file: files) {
-      if (prefix == null)
-	traverseDir(file.getName(), file, state);
-      else
-	traverseDir(prefix + "." + file.getName(), file, state);
+    if (files != null) {
+      for (File file : files) {
+	if (prefix == null)
+	  traverseDir(file.getName(), file, state);
+	else
+	  traverseDir(prefix + "." + file.getName(), file, state);
+      }
     }
   }
 
@@ -403,8 +402,10 @@ public class ClassPathTraversal
 	      return pathname.isFile() && pathname.getName().toLowerCase().endsWith(".jar");
 	    }
 	  });
-          for (File jar: jars)
-            elements.add(jar.getAbsolutePath());
+          if (jars != null) {
+            for (File jar : jars)
+              elements.add(jar.getAbsolutePath());
+          }
 	}
 	else {
           elements.add(p);
