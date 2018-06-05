@@ -15,7 +15,7 @@
 
 /*
  * ClassLocator.java
- * Copyright (C) 2005-2017 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2005-2018 University of Waikato, Hamilton, New Zealand
  *
  */
 
@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,7 +45,6 @@ import java.util.logging.Logger;
  * logging level.
  *
  * @author FracPete (fracpete at waikato dot ac dot nz)
- * @version $Revision: 14943 $
  * @see StringCompare
  */
 public class ClassLocator 
@@ -52,6 +52,18 @@ public class ClassLocator
 
   /** for serialization. */
   private static final long serialVersionUID = 6443115424919701746L;
+
+  /** the cache for subclass checks. */
+  protected static Map<String,Boolean> m_CheckSubClass;
+  static {
+    m_CheckSubClass = new HashMap<>();
+  }
+
+  /** the cache for interface checks. */
+  protected static Map<String,Boolean> m_CheckInterface;
+  static {
+    m_CheckInterface = new HashMap<>();
+  }
 
   /** the logger in use. */
   protected transient Logger m_Logger;
@@ -545,6 +557,12 @@ public class ClassLocator
    * @return                TRUE if "otherclass" is a true subclass
    */
   public static boolean isSubclass(String superclass, String otherclass) {
+    String	key;
+
+    key = superclass + "-" + otherclass;
+    if (m_CheckSubClass.containsKey(key))
+      return m_CheckSubClass.get(key);
+
     try {
       return isSubclass(Class.forName(superclass), Class.forName(otherclass));
     }
@@ -564,8 +582,12 @@ public class ClassLocator
   public static boolean isSubclass(Class superclass, Class otherclass) {
     Class       currentclass;
     boolean     result;
+    String	key;
 
-    result       = false;
+    key = superclass.getName() + "-" + otherclass.getName();
+    if (m_CheckSubClass.containsKey(key))
+      return m_CheckSubClass.get(key);
+
     currentclass = otherclass;
     do {
       result = currentclass.equals(superclass);
@@ -579,6 +601,8 @@ public class ClassLocator
     }
     while (!result);
 
+    m_CheckSubClass.put(key, result);
+
     return result;
   }
 
@@ -590,6 +614,12 @@ public class ClassLocator
    * @return          TRUE if the class contains the interface
    */
   public static boolean hasInterface(String intf, String cls) {
+    String	key;
+
+    key = intf + "-" + cls;
+    if (m_CheckInterface.containsKey(key))
+      return m_CheckInterface.get(key);
+
     try {
       return hasInterface(Class.forName(intf), Class.forName(cls));
     }
@@ -606,7 +636,17 @@ public class ClassLocator
    * @return          TRUE if the class contains the interface
    */
   public static boolean hasInterface(Class intf, Class cls) {
-    return intf.isAssignableFrom(cls);
+    boolean	result;
+    String	key;
+
+    key = intf.getName() + "-" + cls.getName();
+    if (m_CheckInterface.containsKey(key))
+      return m_CheckInterface.get(key);
+
+    result = intf.isAssignableFrom(cls);
+    m_CheckInterface.put(key, result);
+
+    return result;
   }
 
   /**
