@@ -29,11 +29,16 @@ import java.util.logging.Level;
 
 /**
  * Simple class traversal scheme that uses a predefined list of classnames.
+ * Automatically skips empty strings and strings starting with {@link #COMMENT}
+ * (after trimming them).
  *
  * @author FracPete (fracpete at waikato dot ac dot nz)
  */
 public class FixedClassListTraversal
   extends AbstractClassTraversal {
+
+  /** line comment. */
+  public static final String COMMENT = "#";
 
   /** the list of classes to traverse. */
   protected List<String> m_Classnames;
@@ -60,8 +65,12 @@ public class FixedClassListTraversal
     try {
       BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
       String line;
-      while ((line = reader.readLine()) != null)
+      while ((line = reader.readLine()) != null) {
+        line = line.trim();
+        if (line.isEmpty() || line.startsWith(COMMENT))
+          continue;
         m_Classnames.add(line);
+      }
     }
     catch (Exception e) {
       getLogger().log(Level.SEVERE, "Failed to read class names from input stream!", e);
