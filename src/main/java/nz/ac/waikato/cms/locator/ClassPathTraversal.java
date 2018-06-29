@@ -21,7 +21,6 @@ package nz.ac.waikato.cms.locator;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -34,7 +33,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * For traversing the classpath.
@@ -46,7 +44,7 @@ import java.util.logging.Logger;
  * @author  fracpete (fracpete at waikato dot ac dot nz)
  */
 public class ClassPathTraversal
-  implements Serializable {
+  extends AbstractClassTraversal {
 
   /** for serialization. */
   private static final long serialVersionUID = -2973185784363491578L;
@@ -87,23 +85,6 @@ public class ClassPathTraversal
     public boolean accept(File pathname) {
       return pathname.isDirectory();
     }
-  }
-
-  /**
-   * Interface for classes that listen to the traversal of the classpath.
-   *
-   * @author  fracpete (fracpete at waikato dot ac dot nz)
-   */
-  public interface TraversalListener {
-
-    /**
-     * Gets called when a class is being traversed.
-     *
-     * @param classname		the current classname
-     * @param classPathPart	the current classpath part this classname is
-     *                          located in
-     */
-    public void traversing(String classname, URL classPathPart);
   }
 
   /**
@@ -155,68 +136,6 @@ public class ClassPathTraversal
     public TraversalListener getListener() {
       return m_Listener;
     }
-  }
-
-  /**
-   * Extracts the package name from the (clean) classname.
-   *
-   * @param classname	the classname to extract the package from
-   * @return		the package name
-   */
-  public static String extractPackage(String classname) {
-    if (classname.contains("."))
-      return classname.substring(0, classname.lastIndexOf("."));
-    else
-      return DEFAULT_PACKAGE;
-  }
-
-  /**
-   * Fixes the classname, turns "/" and "\" into "." and removes ".class".
-   *
-   * @param classname	the classname to process
-   * @return		the processed classname
-   */
-  public static String cleanUp(String classname) {
-    String	result;
-
-    result = classname;
-
-    if (result.contains("/"))
-      result = result.replace("/", ".");
-    if (result.contains("\\"))
-      result = result.replace("\\", ".");
-    if (result.endsWith(".class"))
-      result = result.substring(0, result.length() - 6);
-
-    return result;
-  }
-
-  /** the key for the default package. */
-  public final static String DEFAULT_PACKAGE = "DEFAULT";
-
-  /** the logger in use. */
-  protected transient Logger m_Logger;
-
-  /**
-   * Returns whether logging is enabled.
-   *
-   * @return		true if enabled
-   */
-  public boolean isLoggingEnabled() {
-    return true;
-  }
-
-  /**
-   * Returns the logger in use.
-   *
-   * @return		the logger
-   */
-  public synchronized Logger getLogger() {
-    if (m_Logger == null) {
-      m_Logger = Logger.getLogger(getClass().getName());
-      m_Logger.setLevel(LoggingHelper.getLevel(getClass()));
-    }
-    return m_Logger;
   }
 
   /**

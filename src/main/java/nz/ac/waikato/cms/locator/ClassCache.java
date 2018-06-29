@@ -19,8 +19,6 @@
  */
 package nz.ac.waikato.cms.locator;
 
-import nz.ac.waikato.cms.locator.ClassPathTraversal.TraversalListener;
-
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
@@ -91,7 +89,6 @@ public class ClassCache
     public void traversing(String classname, URL classPathPart) {
       String		pkgname;
       HashSet<String>	names;
-      HashSet<Class>	classes;
 
       // classname and package
       pkgname = ClassPathTraversal.extractPackage(classname);
@@ -121,10 +118,21 @@ public class ClassCache
 
   /**
    * Initializes the cache.
+   * Uses the {@link ClassPathTraversal} class.
    */
   public ClassCache() {
     super();
-    initialize();
+    initialize(new ClassPathTraversal());
+  }
+
+  /**
+   * Initializes the cache.
+   *
+   * @param traversal the traversal instance to use
+   */
+  public ClassCache(AbstractClassTraversal traversal) {
+    super();
+    initialize(traversal);
   }
 
   /**
@@ -193,15 +201,22 @@ public class ClassCache
   /**
    * Initializes the cache.
    */
-  protected void initialize() {
-    ClassPathTraversal	traversal;
-    Listener 		listener;
+  protected void initialize(AbstractClassTraversal traversal) {
+    Listener 	listener;
 
-    traversal = new ClassPathTraversal();
-    listener  = new Listener();
+    listener = new Listener();
     traversal.traverse(listener);
 
-    m_NameCache  = listener.getNameCache();
+    m_NameCache = listener.getNameCache();
+  }
+
+  /**
+   * Returns whether the cache is empty.
+   *
+   * @return		true if empty
+   */
+  public boolean isEmpty() {
+    return (m_NameCache == null) || m_NameCache.isEmpty();
   }
 
   /**
