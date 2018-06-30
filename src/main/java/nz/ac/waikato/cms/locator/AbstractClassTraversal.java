@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  * @author  fracpete (fracpete at waikato dot ac dot nz)
  */
 public abstract class AbstractClassTraversal
-  implements Serializable {
+  implements Serializable, ClassTraversal {
 
   /** for serialization. */
   private static final long serialVersionUID = -2973185784363491578L;

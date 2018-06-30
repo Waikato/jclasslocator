@@ -1,0 +1,10 @@
+# first package
+nz.ac.waikato.cms.locator.example.pkgA.ConcreteClassA
+nz.ac.waikato.cms.locator.example.pkgA.ConcreteClassB
+nz.ac.waikato.cms.locator.example.pkgA.InterfaceImplA
+
+# second package
+nz.ac.waikato.cms.locator.example.pkgB.ConcreteClassC
+nz.ac.waikato.cms.locator.example.pkgB.InterfaceImplB
+nz.ac.waikato.cms.locator.example.pkgB.InterfaceImplC
+nz.ac.waikato.cms.locator.example.pkgB.InterfaceImplInternal

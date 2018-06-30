@@ -87,14 +87,25 @@ public class ClassLocator
   protected boolean m_OnlySerializable;
 
   /** the singleton. */
-  protected static ClassLocator m_Singleton;
+  protected static Map<Class<? extends ClassTraversal>,ClassLocator> m_Singleton;
 
   /**
-   * Initializes the class locator.
+   * Initializes the class locator. Uses default traversal scheme for
+   * initalizing the class cache.
    */
   protected ClassLocator() {
+    this(null);
+  }
+
+  /**
+   * Initializes the class locator. Uses the specified traversal scheme for
+   * initializing the class cache.
+   *
+   * @param traversal the traversal instance to use, can be null
+   */
+  protected ClassLocator(ClassTraversal traversal) {
     super();
-    initCache();
+    initCache(traversal);
   }
 
   /**
@@ -452,16 +463,19 @@ public class ClassLocator
   /**
    * Returns a new instance of the {@link ClassCache}.
    *
+   * @param traversal	how to traverse the classes, can be null
    * @return		the instance
    */
-  protected ClassCache newClassCache() {
-    return new ClassCache();
+  protected ClassCache newClassCache(ClassTraversal traversal) {
+    return new ClassCache(traversal);
   }
 
   /**
    * initializes the cache for the classnames.
+   *
+   * @param traversal	how to traverse the classes, can be null
    */
-  protected void initCache() {
+  protected void initCache(ClassTraversal traversal) {
     if (m_CacheNames == null)
       m_CacheNames = new HashMap<>();
     if (m_CacheClasses == null)
@@ -469,7 +483,7 @@ public class ClassLocator
     if (m_BlackListed == null)
       m_BlackListed = new HashSet<>();
     if (m_Cache == null)
-      m_Cache = newClassCache();
+      m_Cache = newClassCache(traversal);
   }
 
   /**
@@ -538,14 +552,29 @@ public class ClassLocator
 
   /**
    * Returns the singleton, instantiates it if necessary.
-   * 
+   *
    * @return		the singleton
    */
   public static synchronized ClassLocator getSingleton() {
+    return getSingleton(null);
+  }
+
+  /**
+   * Returns the singleton, instantiates it if necessary.
+   *
+   * @param traversal 	the class traversal scheme to use, can be null for default one
+   * @return		the singleton
+   */
+  public static synchronized ClassLocator getSingleton(ClassTraversal traversal) {
+    Class<? extends ClassTraversal>	cls;
+
+    cls = (traversal == null) ? null : traversal.getClass();
     if (m_Singleton == null)
-      m_Singleton = new ClassLocator();
+      m_Singleton = new HashMap<>();
+    if (!m_Singleton.containsKey(cls))
+      m_Singleton.put(cls, new ClassLocator(traversal));
     
-    return m_Singleton;
+    return m_Singleton.get(cls);
   }
   
   /**

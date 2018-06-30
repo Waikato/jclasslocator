@@ -15,7 +15,7 @@
 
 /*
  * ClassCache.java
- * Copyright (C) 2010-2017 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2010-2018 University of Waikato, Hamilton, New Zealand
  */
 package nz.ac.waikato.cms.locator;
 
@@ -128,11 +128,11 @@ public class ClassCache
   /**
    * Initializes the cache.
    *
-   * @param traversal the traversal instance to use
+   * @param traversal the traversal instance to use, can be null
    */
-  public ClassCache(AbstractClassTraversal traversal) {
+  public ClassCache(ClassTraversal traversal) {
     super();
-    initialize(traversal);
+    initialize((traversal == null) ? new ClassPathTraversal() : traversal);
   }
 
   /**
@@ -201,7 +201,7 @@ public class ClassCache
   /**
    * Initializes the cache.
    */
-  protected void initialize(AbstractClassTraversal traversal) {
+  protected void initialize(ClassTraversal traversal) {
     Listener 	listener;
 
     listener = new Listener();

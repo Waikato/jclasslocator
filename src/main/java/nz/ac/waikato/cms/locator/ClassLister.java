@@ -28,6 +28,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -99,15 +100,26 @@ public class ClassLister
   /** whether to allow only serializable classes. */
   protected boolean m_OnlySerializable;
 
+  /** the class traversal to use. */
+  protected ClassTraversal m_ClassTraversal;
+
   /** the singleton. */
-  protected static ClassLister m_Singleton;
+  protected static Map<Class<? extends ClassTraversal>, ClassLister> m_Singleton;
 
   /**
    * Initializes the classlister.
    */
   protected ClassLister() {
+    this(null);
+  }
+
+  /**
+   * Initializes the classlister.
+   */
+  protected ClassLister(ClassTraversal traversal) {
     super();
 
+    m_ClassTraversal = traversal;
     setPackages(load("nz/ac/waikato/cms/locator/ClassLister.props"));
     setBlacklist(load("nz/ac/waikato/cms/locator/ClassLister.blacklist"));
   }
@@ -132,6 +144,15 @@ public class ClassLister
       m_Logger.setLevel(LoggingHelper.getLevel(getClass()));
     }
     return m_Logger;
+  }
+
+  /**
+   * Returns the underlying class traversal.
+   *
+   * @return		the traversal scheme
+   */
+  public ClassTraversal getClassTraversal() {
+    return m_ClassTraversal;
   }
 
   /**
@@ -262,7 +283,7 @@ public class ClassLister
   protected ClassLocator getClassLocator() {
     ClassLocator  	result;
 
-    result = ClassLocator.getSingleton();
+    result = ClassLocator.getSingleton(m_ClassTraversal);
     if (result.isOnlyDefaultConstructor() != isOnlyDefaultConstructor())
       result.setOnlyDefaultConstructor(isOnlyDefaultConstructor());
     if (result.isOnlySerializable() != isOnlySerializable())
@@ -502,10 +523,25 @@ public class ClassLister
    * @return		the singleton
    */
   public static synchronized ClassLister getSingleton() {
-    if (m_Singleton == null)
-      m_Singleton = new ClassLister();
+    return getSingleton(null);
+  }
 
-    return m_Singleton;
+  /**
+   * Returns the singleton instance of the class lister.
+   *
+   * @param traversal	the class traversal to use, can be null for default one
+   * @return		the singleton
+   */
+  public static synchronized ClassLister getSingleton(ClassTraversal traversal) {
+    Class<? extends ClassTraversal>	cls;
+
+    cls = (traversal == null) ? null : traversal.getClass();
+    if (m_Singleton == null)
+      m_Singleton = new HashMap<>();
+    if (!m_Singleton.containsKey(cls))
+      m_Singleton.put(cls, new ClassLister(traversal));
+
+    return m_Singleton.get(cls);
   }
 
   /**

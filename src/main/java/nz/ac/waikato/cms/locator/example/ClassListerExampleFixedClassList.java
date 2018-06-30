@@ -14,22 +14,24 @@
  */
 
 /*
- * ClassListerExample.java
- * Copyright (C) 2017 University of Waikato, Hamilton, NZ
+ * ClassListerExampleFixedClassList.java
+ * Copyright (C) 2018 University of Waikato, Hamilton, NZ
  */
 
 package nz.ac.waikato.cms.locator.example;
 
 import nz.ac.waikato.cms.locator.ClassLister;
+import nz.ac.waikato.cms.locator.FixedClassListTraversal;
 
 import java.util.Properties;
 
 /**
- * Demonstrates how to use the {@link ClassLister}.
+ * Demonstrates how to use the {@link ClassLister} with a fixed list of
+ * class names.
  *
  * @author FracPete (fracpete at waikato dot ac dot nz)
  */
-public class ClassListerExample {
+public class ClassListerExampleFixedClassList {
 
   public static void main(String[] args) {
     // NB: in the following the properties objects get constructed by hand, but
@@ -46,7 +48,8 @@ public class ClassListerExample {
     black.put(SomeInterface.class.getName(), "nz.ac.waikato.cms.locator.example.pkgB.InterfaceImplInternal");  // specific class
 
     // initialize
-    ClassLister lister = ClassLister.getSingleton();
+    FixedClassListTraversal fixed = new FixedClassListTraversal(ClassLoader.getSystemResourceAsStream("nz/ac/waikato/cms/locator/example/fixed.classes"));
+    ClassLister lister = ClassLister.getSingleton(fixed);
     lister.setPackages(pkgs);
     lister.setBlacklist(black);
     lister.initialize();
