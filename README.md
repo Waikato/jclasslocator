@@ -147,6 +147,43 @@ These environment variables can take the following values:
 {OFF|SEVERE|WARNING|INFO|CONFIG|FINE|FINER|FINEST}
 ```
 
+## No classpath
+In case the classpath is empty, i.e., `System.getProperty("java.class.path")` 
+returns an empty string, you can initialize the `ClassCache` instance with a
+fixed list of class names. For that you need to provide an instance of the 
+`FixedClassListTraversal` class to the `ClassLister.getSingleton(ClassTraversal)`
+method. `FixedClassListTraversal` can be instantiated either with a 
+`java.util.List<String>` that lists all class names or with an `java.io.InputStream`
+object, from which to read the class names. Empty lines and lines starting with
+`#` get automatically skipped.
+
+The example classes could be stored in the file `nz/ac/waikato/cms/locator/example/fixed.classes` 
+like this:
+
+```
+# first package
+nz.ac.waikato.cms.locator.example.pkgA.ConcreteClassA
+nz.ac.waikato.cms.locator.example.pkgA.ConcreteClassB
+nz.ac.waikato.cms.locator.example.pkgA.InterfaceImplA
+
+# second package
+nz.ac.waikato.cms.locator.example.pkgB.ConcreteClassC
+nz.ac.waikato.cms.locator.example.pkgB.InterfaceImplB
+nz.ac.waikato.cms.locator.example.pkgB.InterfaceImplC
+nz.ac.waikato.cms.locator.example.pkgB.InterfaceImplInternal
+```
+
+The code therefore looks like this for initializing the `ClassLister`:
+
+```java
+FixedClassListTraversal fixed = new FixedClassListTraversal(
+  ClassLoader.getSystemResourceAsStream("nz/ac/waikato/cms/locator/example/fixed.classes"));
+ClassLister lister = ClassLister.getSingleton(fixed);
+```
+
+The above code is taken from `nz.ac.waikato.cms.locator.example.ClassListerExampleFixedClassList`:
+
+
 ## Maven
 
 Add the following dependency to your `pom.xml`:
@@ -155,6 +192,6 @@ Add the following dependency to your `pom.xml`:
     <dependency>
       <groupId>com.github.waikato</groupId>
       <artifactId>jclasslocator</artifactId>
-      <version>0.0.11</version>
+      <version>0.0.12</version>
     </dependency>
 ```
