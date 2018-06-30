@@ -21,6 +21,7 @@
 package nz.ac.waikato.cms.locator;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -63,6 +64,8 @@ public class FixedClassListTraversal
     super();
     m_Classnames = new ArrayList<>();
     try {
+      if (inputStream == null)
+        throw new IOException("Input stream to read from is null!");
       BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
       String line;
       while ((line = reader.readLine()) != null) {
