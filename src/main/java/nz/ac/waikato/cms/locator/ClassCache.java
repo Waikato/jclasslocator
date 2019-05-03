@@ -15,7 +15,7 @@
 
 /*
  * ClassCache.java
- * Copyright (C) 2010-2018 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2010-2019 University of Waikato, Hamilton, New Zealand
  */
 package nz.ac.waikato.cms.locator;
 
@@ -23,10 +23,13 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 /**
@@ -52,8 +55,11 @@ public class ClassCache
   public static class Listener
     implements TraversalListener {
 
-    /** for caching all classes on the class path (package-name &lt;-&gt; HashSet with classnames). */
-    protected HashMap<String,HashSet<String>> m_NameCache;
+    /** for caching all classes on the class path (package-name &lt;-&gt; Set with classnames). */
+    protected Map<String,Set<String>> m_NameCache;
+
+    /** caches the classnames per classpath part (path &lt;-&gt; Set with classnames). */
+    protected Map<URL,Set<String>> m_ClasspathPartCache;
 
     /** the logger in use. */
     protected transient Logger m_Logger;
@@ -62,7 +68,8 @@ public class ClassCache
      * Initializes the listener.
      */
     public Listener() {
-      m_NameCache  = new HashMap<>();
+      m_NameCache          = new HashMap<>();
+      m_ClasspathPartCache = new HashMap<>();
     }
 
     /**
@@ -88,16 +95,19 @@ public class ClassCache
     @Override
     public void traversing(String classname, URL classPathPart) {
       String		pkgname;
-      HashSet<String>	names;
 
       // classname and package
       pkgname = ClassPathTraversal.extractPackage(classname);
 
-      // add to cache
+      // add to package cache
       if (!m_NameCache.containsKey(pkgname))
         m_NameCache.put(pkgname, new HashSet<>());
-      names = m_NameCache.get(pkgname);
-      names.add(classname);
+      m_NameCache.get(pkgname).add(classname);
+
+      // add to classpath part cache
+      if (!m_ClasspathPartCache.containsKey(classPathPart))
+	m_ClasspathPartCache.put(classPathPart, new HashSet<>());
+      m_ClasspathPartCache.get(classPathPart).add(classname);
     }
 
     /**
@@ -105,16 +115,28 @@ public class ClassCache
      *
      * @return		the cache
      */
-    public HashMap<String,HashSet<String>> getNameCache() {
+    public Map<String,Set<String>> getNameCache() {
       return m_NameCache;
+    }
+
+    /**
+     * Returns the classpath path cache.
+     *
+     * @return		the cache
+     */
+    public Map<URL,Set<String>> getClasspathPartCache() {
+      return m_ClasspathPartCache;
     }
   }
 
   /** the logger in use. */
   protected transient Logger m_Logger;
 
-  /** for caching all classes on the class path (package-name &lt;-&gt; HashSet with classnames). */
-  protected HashMap<String,HashSet<String>> m_NameCache;
+  /** for caching all classes on the class path (package-name &lt;-&gt; Set with classnames). */
+  protected Map<String,Set<String>> m_NameCache;
+
+  /** the classpath path part cache (classpath part &lt;-&gt; set with classnames). */
+  protected Map<URL,Set<String>> m_ClasspathPartCache;
 
   /**
    * Initializes the cache.
@@ -165,7 +187,7 @@ public class ClassCache
    */
   public boolean remove(String classname) {
     String		pkgname;
-    HashSet<String>	names;
+    Set<String>		names;
 
     classname = ClassPathTraversal.cleanUp(classname);
     pkgname   = ClassPathTraversal.extractPackage(classname);
@@ -189,11 +211,33 @@ public class ClassCache
    * Returns all the classes for the given package.
    *
    * @param pkgname	the package to get the classes for
-   * @return		the classes (sorted by name)
+   * @return		the classes
    */
-  public HashSet<String> getClassnames(String pkgname) {
+  public Set<String> getClassnames(String pkgname) {
     if (m_NameCache.containsKey(pkgname))
       return m_NameCache.get(pkgname);
+    else
+      return new HashSet<>();
+  }
+
+  /**
+   * Returns all the stored classpath parts.
+   *
+   * @return		the classpath parts
+   */
+  public Iterator<URL> classpathParts() {
+    return m_ClasspathPartCache.keySet().iterator();
+  }
+
+  /**
+   * Returns all the classes for the given classpath part.
+   *
+   * @param part	the classpath part to get the classes for
+   * @return		the classes
+   */
+  public Set<String> getClassnames(URL part) {
+    if (m_ClasspathPartCache.containsKey(part))
+      return m_ClasspathPartCache.get(part);
     else
       return new HashSet<>();
   }
@@ -207,7 +251,8 @@ public class ClassCache
     listener = new Listener();
     traversal.traverse(listener);
 
-    m_NameCache = listener.getNameCache();
+    m_NameCache          = listener.getNameCache();
+    m_ClasspathPartCache = listener.getClasspathPartCache();
   }
 
   /**
@@ -226,12 +271,30 @@ public class ClassCache
    */
   public static void main(String[] args) {
     ClassCache cache = new ClassCache();
-    Iterator<String> packages = cache.packages();
-    List<String> sorted = new ArrayList<>();
-    while (packages.hasNext())
-      sorted.add(packages.next());
-    Collections.sort(sorted);
-    for (String key: sorted)
-      System.out.println(key + ": " + cache.getClassnames(key).size());
+
+    // packages
+    System.out.println("--> Packages");
+    Iterator<String> pkgs = cache.packages();
+    List<String> pkgsSorted = new ArrayList<>();
+    while (pkgs.hasNext())
+      pkgsSorted.add(pkgs.next());
+    Collections.sort(pkgsSorted);
+    for (String pkg : pkgsSorted)
+      System.out.println(pkg + ": " + cache.getClassnames(pkg).size());
+
+    // packages
+    System.out.println("--> Classpath parts");
+    Iterator<URL> parts = cache.classpathParts();
+    List<URL> partsSorted = new ArrayList<>();
+    while (parts.hasNext())
+      partsSorted.add(parts.next());
+    Collections.sort(partsSorted, new Comparator<URL>() {
+      @Override
+      public int compare(URL o1, URL o2) {
+	return o1.toExternalForm().compareTo(o2.toExternalForm());
+      }
+    });
+    for (URL part : partsSorted)
+      System.out.println(part + ": " + cache.getClassnames(part).size());
   }
 }
