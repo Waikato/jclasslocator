@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * A class that stores all classes on the classpath.
@@ -211,6 +212,25 @@ public class ClassCache
   }
 
   /**
+   * Returns all the stored packages that match the provided regular expression.
+   *
+   * @param regexp	the regular expression that the package names must match
+   * @return		the package names
+   */
+  public Iterator<String> packages(String regexp) {
+    List<String>	result;
+    Pattern 		pattern;
+
+    result  = new ArrayList<>();
+    pattern = Pattern.compile(regexp);
+    for (String pkg: m_NameCache.keySet()) {
+      if (pattern.matcher(pkg).matches())
+        result.add(pkg);
+    }
+    return result.iterator();
+  }
+
+  /**
    * Returns all the classes for the given package.
    *
    * @param pkgname	the package to get the classes for
@@ -230,6 +250,25 @@ public class ClassCache
    */
   public Iterator<URL> classpathParts() {
     return m_ClasspathPartCache.keySet().iterator();
+  }
+
+  /**
+   * Returns all the stored classpath parts that match the provided regular expression.
+   *
+   * @param regexp	the regular expression that the URLs must match
+   * @return		the classpath parts
+   */
+  public Iterator<URL> classpathParts(String regexp) {
+    List<URL>	result;
+    Pattern 	pattern;
+
+    result  = new ArrayList<>();
+    pattern = Pattern.compile(regexp);
+    for (URL part : m_ClasspathPartCache.keySet()) {
+      if (pattern.matcher(part.toExternalForm()).matches())
+        result.add(part);
+    }
+    return result.iterator();
   }
 
   /**
@@ -285,10 +324,35 @@ public class ClassCache
     for (String pkg : pkgsSorted)
       System.out.println(pkg + ": " + cache.getClassnames(pkg).size());
 
+    // packages (nz.*)
+    System.out.println("--> Packages (nz.*)");
+    pkgs = cache.packages("nz.*");
+    pkgsSorted = new ArrayList<>();
+    while (pkgs.hasNext())
+      pkgsSorted.add(pkgs.next());
+    Collections.sort(pkgsSorted);
+    for (String pkg : pkgsSorted)
+      System.out.println(pkg + ": " + cache.getClassnames(pkg).size());
+
     // packages
     System.out.println("--> Classpath parts");
     Iterator<URL> parts = cache.classpathParts();
     List<URL> partsSorted = new ArrayList<>();
+    while (parts.hasNext())
+      partsSorted.add(parts.next());
+    Collections.sort(partsSorted, new Comparator<URL>() {
+      @Override
+      public int compare(URL o1, URL o2) {
+	return o1.toExternalForm().compareTo(o2.toExternalForm());
+      }
+    });
+    for (URL part : partsSorted)
+      System.out.println(part + ": " + cache.getClassnames(part).size());
+
+    // packages (.*classes.*)
+    System.out.println("--> Classpath parts (.*classes.*)");
+    parts = cache.classpathParts(".*classes.*");
+    partsSorted = new ArrayList<>();
     while (parts.hasNext())
       partsSorted.add(parts.next());
     Collections.sort(partsSorted, new Comparator<URL>() {
