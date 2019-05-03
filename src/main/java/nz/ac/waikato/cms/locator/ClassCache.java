@@ -189,6 +189,9 @@ public class ClassCache
     String		pkgname;
     Set<String>		names;
 
+    for (URL part: m_ClasspathPartCache.keySet())
+      m_ClasspathPartCache.get(part).remove(classname);
+
     classname = ClassPathTraversal.cleanUp(classname);
     pkgname   = ClassPathTraversal.extractPackage(classname);
     names     = m_NameCache.get(pkgname);
