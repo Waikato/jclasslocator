@@ -15,7 +15,7 @@
 
 /*
  * ClassLister.java
- * Copyright (C) 2007-2017 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2007-2019 University of Waikato, Hamilton, New Zealand
  */
 
 package nz.ac.waikato.cms.locator;
@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -65,7 +66,6 @@ import java.util.regex.Pattern;
  * logging level.
  *
  * @author  fracpete (fracpete at waikato dot ac dot nz)
- * @version $Revision: 15209 $
  */
 public class ClassLister
   implements Serializable {
@@ -90,6 +90,12 @@ public class ClassLister
 
   /** the list (superclass/classes). */
   protected HashMap<String,List<Class>> m_ListClasses;
+
+  /** cache for all managed classnames. */
+  protected Set<String> m_ManagedClassnames;
+
+  /** cache for all managed classs. */
+  protected Set<Class> m_ManagedClasses;
 
   /** the properties with the blacklisted classes. */
   protected Properties m_Blacklist;
@@ -369,6 +375,14 @@ public class ClassLister
       getLogger().log(Level.SEVERE, "Failed to determine packages/classes:", e);
       m_Packages = new Properties();
     }
+
+    // store managed classes
+    m_ManagedClassnames = new HashSet<>();
+    for (String sclass: m_CacheNames.keySet())
+      m_ManagedClassnames.addAll(m_CacheNames.get(sclass));
+    m_ManagedClasses = new HashSet<>();
+    for (String sclass: m_CacheClasses.keySet())
+      m_ManagedClasses.addAll(m_CacheClasses.get(sclass));
   }
 
   /**
@@ -492,6 +506,44 @@ public class ClassLister
    */
   public Properties getPackages() {
     return m_Packages;
+  }
+
+  /**
+   * Checks whether the class is listed in one of the hierarchies.
+   *
+   * @param cls		the class to check
+   * @return		true if listed
+   */
+  public boolean isManaged(Class cls) {
+    return m_ManagedClasses.contains(cls);
+  }
+
+  /**
+   * Returns the set of managed classes.
+   *
+   * @return		the set
+   */
+  public Set<Class> getManagedClasses() {
+    return m_ManagedClasses;
+  }
+
+  /**
+   * Checks whether the classname is listed in one of the hierarchies.
+   *
+   * @param classname	the classname to check
+   * @return		true if listed
+   */
+  public boolean isManaged(String classname) {
+    return m_ManagedClassnames.contains(classname);
+  }
+
+  /**
+   * Returns the set of managed class names.
+   *
+   * @return		the set
+   */
+  public Set<String> getManagedClassnames() {
+    return m_ManagedClassnames;
   }
 
   /**
