@@ -548,7 +548,7 @@ public class ClassLister
 
   /**
    * Returns the class hierarchies as properties object, with the superclasses
-   * as keys.
+   * as keys and the values representing comma-separated lists of classnames.
    *
    * @return		the generated properties
    */
@@ -565,6 +565,30 @@ public class ClassLister
         classes.append(cls.getName());
       }
       result.setProperty(superclass, classes.toString());
+    }
+
+    return result;
+  }
+
+  /**
+   * Returns the class hierarchies as properties object, with the superclasses
+   * as keys and the values representing comma-separated lists of packages.
+   *
+   * @return		the generated properties
+   */
+  public Properties toPackages() {
+    Properties		result;
+    StringBuilder 	pkgs;
+
+    result = new Properties();
+    for (String superclass: getSuperclasses()) {
+      pkgs = new StringBuilder();
+      for (String pkg : getPackages(superclass)) {
+        if (pkgs.length() > 0)
+          pkgs.append(",");
+        pkgs.append(pkg);
+      }
+      result.setProperty(superclass, pkgs.toString());
     }
 
     return result;

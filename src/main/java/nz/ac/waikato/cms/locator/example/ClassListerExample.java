@@ -62,5 +62,11 @@ public class ClassListerExample {
     classes = lister.getClasses(SomeInterface.class);
     for (Class cls: classes)
       System.out.println("- " + cls.getName());
+
+    // toPackages
+    System.out.println("\ntoPackages:\n" + lister.toPackages());
+
+    // toProperties
+    System.out.println("\ntoProperties:\n" + lister.toProperties());
   }
 }

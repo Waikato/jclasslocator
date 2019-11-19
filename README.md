@@ -193,6 +193,16 @@ how to initialize from a `java.utils.Properties` object. Each of the properties 
 comma-separated list of classnames.
 
 
+## Other useful methods
+
+* `ClassLister.toProperties()` - returns the class hierarchies as a 
+  `java.util.Properties` object. The key of a property is the superclass name
+  and the associated value is the comma-separated list of classnames.
+* `ClassLister.toPackages()` - returns the class hierarchies as a 
+  `java.util.Properties` object. The key of a property is the superclass name
+  and the associated value is the comma-separated list of packages.
+
+
 ## Maven
 
 Add the following dependency to your `pom.xml`:
