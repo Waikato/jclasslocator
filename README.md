@@ -148,6 +148,8 @@ These environment variables can take the following values:
 ```
 
 ## No classpath
+
+### Fixed list of classnames
 In case the classpath is empty, i.e., `System.getProperty("java.class.path")` 
 returns an empty string, you can initialize the `ClassCache` instance with a
 fixed list of class names. For that you need to provide an instance of the 
@@ -181,7 +183,14 @@ FixedClassListTraversal fixed = new FixedClassListTraversal(
 ClassLister lister = ClassLister.getSingleton(fixed);
 ```
 
-The above code is taken from `nz.ac.waikato.cms.locator.example.ClassListerExampleFixedClassList`:
+The above code is taken from `nz.ac.waikato.cms.locator.example.ClassListerExampleFixedClassList`.
+
+
+### Classnames from properties
+
+Example `nz.ac.waikato.cms.locator.example.ClassListerExamplePropertiesBasedClassList` shows
+how to initialize from a `java.utils.Properties` object. Each of the properties contains a
+comma-separated list of classnames.
 
 
 ## Maven

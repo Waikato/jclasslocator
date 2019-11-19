@@ -547,6 +547,30 @@ public class ClassLister
   }
 
   /**
+   * Returns the class hierarchies as properties object, with the superclasses
+   * as keys.
+   *
+   * @return		the generated properties
+   */
+  public Properties toProperties() {
+    Properties		result;
+    StringBuilder	classes;
+
+    result = new Properties();
+    for (String superclass: getSuperclasses()) {
+      classes = new StringBuilder();
+      for (Class cls: getClasses(superclass)) {
+        if (classes.length() > 0)
+          classes.append(",");
+        classes.append(cls.getName());
+      }
+      result.setProperty(superclass, classes.toString());
+    }
+
+    return result;
+  }
+
+  /**
    * Only prints the generated props file with all the classnames, based on
    * the package names for the individual packages.
    *
