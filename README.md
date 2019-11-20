@@ -4,6 +4,8 @@ Java library for analyzing the classpath of an application, e.g., used to
 determine dynamic class hierarchies (simply add a jar with additional classes
 in packages that the `ClassLister` monitors and they are automatically located).  
 
+Used by [ADAMS](https://adams.cms.waikato.ac.nz/).
+
 ## Class hierarchies
 
 Defining class hierarchies is very easy. Just supply a `java.util.Properties`
