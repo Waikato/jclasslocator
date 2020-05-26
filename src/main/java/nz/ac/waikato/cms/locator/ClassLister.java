@@ -15,7 +15,7 @@
 
 /*
  * ClassLister.java
- * Copyright (C) 2007-2019 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2007-2020 University of Waikato, Hamilton, New Zealand
  */
 
 package nz.ac.waikato.cms.locator;
@@ -23,6 +23,7 @@ package nz.ac.waikato.cms.locator;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -348,6 +349,60 @@ public class ClassLister
     updateClassnames(m_ListNames, superclass, new ArrayList<>(names));
     updateClasses(m_CacheClasses, superclass, new HashSet<>(classes));
     updateClasses(m_ListClasses, superclass, new ArrayList<>(classes));
+  }
+
+  /**
+   * Adds/appends a class hierarchy.
+   *
+   * @param superclass	the superclass
+   * @param classes	the classes
+   */
+  public void addHierarchy(Class superclass, Class[] classes) {
+    List<Class>		classList;
+    List<String>	classNames;
+    String[]		patterns;
+    int			i;
+    Pattern		p;
+
+    // remove blacklisted classes
+    classList = new ArrayList<>(Arrays.asList(classes));
+    if (m_Blacklist.containsKey(superclass.getName())) {
+      try {
+        patterns = m_Blacklist.getProperty(superclass.getName()).replaceAll(" ", "").split(",");
+        for (String pattern: patterns) {
+          p = Pattern.compile(pattern);
+          // names
+          i = 0;
+          while (i < classList.size()) {
+            if (p.matcher(classList.get(i).getName()).matches())
+              classList.remove(i);
+            else
+              i++;
+          }
+          // classes
+          i = 0;
+          while (i < classList.size()) {
+            if (p.matcher(classList.get(i).getName()).matches())
+              classList.remove(i);
+            else
+              i++;
+          }
+        }
+      }
+      catch (Exception ex) {
+        getLogger().log(Level.SEVERE, "Failed to blacklist classes for superclass '" + superclass.getName() + "':", ex);
+      }
+    }
+
+    classNames = new ArrayList<>();
+    for (Class cls: classList)
+      classNames.add(cls.getName());
+
+    // create class list
+    updateClassnames(m_CacheNames, superclass.getName(), new HashSet<>(classNames));
+    updateClassnames(m_ListNames, superclass.getName(), new ArrayList<>(classNames));
+    updateClasses(m_CacheClasses, superclass.getName(), new HashSet<>(classList));
+    updateClasses(m_ListClasses, superclass.getName(), new ArrayList<>(classList));
   }
 
   /**
