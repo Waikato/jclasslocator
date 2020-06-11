@@ -15,7 +15,7 @@
 
 /*
  * ClassLocator.java
- * Copyright (C) 2005-2018 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2005-2020 University of Waikato, Hamilton, New Zealand
  *
  */
 
@@ -362,7 +362,7 @@ public class ClassLocator
 
 	  // no abstract classes
 	  if (Modifier.isAbstract(clsNew.getModifiers())) {
-	    m_Cache.remove(result.get(i));
+	    m_Cache.setAbstract(result.get(i), true);
 	    result.remove(i);
 	    continue;
 	  }
