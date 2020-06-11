@@ -15,7 +15,7 @@
 
 /*
  * ClassCache.java
- * Copyright (C) 2010-2019 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2010-2020 University of Waikato, Hamilton, New Zealand
  */
 package nz.ac.waikato.cms.locator;
 
@@ -130,6 +130,9 @@ public class ClassCache
     }
   }
 
+  /** the regexp pattern for identifying anonymous classes. */
+  public static final String PATTERN_ANONYMOUS = ".*\\$[0-9]+$";
+
   /** the logger in use. */
   protected transient Logger m_Logger;
 
@@ -138,6 +141,12 @@ public class ClassCache
 
   /** the classpath path part cache (classpath part &lt;-&gt; set with classnames). */
   protected Map<URL,Set<String>> m_ClasspathPartCache;
+
+  /** cache for abstract classes. */
+  protected Set<String> m_AbstractClasses;
+
+  /** for checking whether an anonymous class. */
+  protected Pattern m_AnonymousCheck;
 
   /**
    * Initializes the cache.
@@ -156,6 +165,21 @@ public class ClassCache
   public ClassCache(ClassTraversal traversal) {
     super();
     initialize((traversal == null) ? new ClassPathTraversal() : traversal);
+  }
+
+  /**
+   * Initializes the cache.
+   */
+  protected void initialize(ClassTraversal traversal) {
+    Listener 	listener;
+
+    listener = new Listener();
+    traversal.traverse(listener);
+
+    m_NameCache          = listener.getNameCache();
+    m_ClasspathPartCache = listener.getClasspathPartCache();
+    m_AbstractClasses    = new HashSet<>();
+    m_AnonymousCheck     = Pattern.compile(PATTERN_ANONYMOUS);
   }
 
   /**
@@ -203,6 +227,39 @@ public class ClassCache
   }
 
   /**
+   * Flags or clears a class as being abstract.
+   *
+   * @param classname	the class
+   * @param value 	whether to flag as abstract or clear
+   */
+  public void setAbstract(String classname, boolean value) {
+    if (value)
+      m_AbstractClasses.add(classname);
+    else
+      m_AbstractClasses.remove(classname);
+  }
+
+  /**
+   * Returns whether the class has been flagged as abstract.
+   *
+   * @param classname	the class
+   * @return		true if flagged as abstract
+   */
+  public boolean isAbstract(String classname) {
+    return m_AbstractClasses.contains(classname);
+  }
+
+  /**
+   * Returns whether the class is an anonymous one ("...$X" with X being a number).
+   *
+   * @param classname
+   * @return
+   */
+  public boolean isAnonymous(String classname) {
+    return m_AnonymousCheck.matcher(classname).matches();
+  }
+
+  /**
    * Returns all the stored packages.
    *
    * @return		the package names
@@ -237,10 +294,28 @@ public class ClassCache
    * @return		the classes
    */
   public Set<String> getClassnames(String pkgname) {
+    return getClassnames(pkgname, false);
+  }
+
+  /**
+   * Returns all the classes for the given package.
+   *
+   * @param pkgname	the package to get the classes for
+   * @param excludeAbstract 	whether to exclude abstract classes
+   * @return		the classes
+   */
+  public Set<String> getClassnames(String pkgname, boolean excludeAbstract) {
+    Set<String>		result;
+
     if (m_NameCache.containsKey(pkgname))
-      return m_NameCache.get(pkgname);
+      result = m_NameCache.get(pkgname);
     else
-      return new HashSet<>();
+      result = new HashSet<>();
+
+    if (excludeAbstract && (result.size() > 0))
+      result.removeAll(m_AbstractClasses);
+
+    return result;
   }
 
   /**
@@ -278,23 +353,28 @@ public class ClassCache
    * @return		the classes
    */
   public Set<String> getClassnames(URL part) {
-    if (m_ClasspathPartCache.containsKey(part))
-      return m_ClasspathPartCache.get(part);
-    else
-      return new HashSet<>();
+    return getClassnames(part, false);
   }
 
   /**
-   * Initializes the cache.
+   * Returns all the classes for the given classpath part.
+   *
+   * @param part	the classpath part to get the classes for
+   * @param excludeAbstract 	whether to exclude abstract classes
+   * @return		the classes
    */
-  protected void initialize(ClassTraversal traversal) {
-    Listener 	listener;
+  public Set<String> getClassnames(URL part, boolean excludeAbstract) {
+    Set<String>		result;
 
-    listener = new Listener();
-    traversal.traverse(listener);
+    if (m_ClasspathPartCache.containsKey(part))
+      result = m_ClasspathPartCache.get(part);
+    else
+      result = new HashSet<>();
 
-    m_NameCache          = listener.getNameCache();
-    m_ClasspathPartCache = listener.getClasspathPartCache();
+    if (excludeAbstract && (result.size() > 0))
+      result.removeAll(m_AbstractClasses);
+
+    return result;
   }
 
   /**
