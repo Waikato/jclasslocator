@@ -285,6 +285,12 @@ public class ClassPathTraversal
 	getLogger().log(Level.INFO, "Skipping: " + part);
       return;
     }
+    // temporary file on Mac?
+    if (file.getName().startsWith("._")) {
+      if (isLoggingEnabled())
+	getLogger().log(Level.INFO, "Skipping Mac tmp file: " + part);
+      return;
+    }
 
     // find classes
     if (file.isDirectory())
