@@ -86,8 +86,8 @@
   </properties>
 
   <scm>
-    <connection>scm:git:https://github.com/waikato/jclasslocator</connection>
-    <developerConnection>scm:git:https://github.com/waikato/jclasslocator</developerConnection>
+    <connection>scm:git:ssh://git@github.com/waikato/jclasslocator</connection>
+    <developerConnection>scm:git:ssh://git@github.com/waikato/jclasslocator</developerConnection>
     <url>https://github.com/waikato/jclasslocator</url>
     <tag>HEAD</tag>
   </scm>
