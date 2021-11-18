@@ -15,7 +15,7 @@
 
 /*
  * ClassCache.java
- * Copyright (C) 2010-2020 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2010-2021 University of Waikato, Hamilton, New Zealand
  */
 package nz.ac.waikato.cms.locator;
 
@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  * @author  fracpete (fracpete at waikato dot ac dot nz)
  */
 public class ClassCache
-  implements Serializable {
+    implements Serializable {
 
   /** for serialization. */
   private static final long serialVersionUID = -2973185784363491578L;
@@ -54,7 +54,7 @@ public class ClassCache
    * @author  fracpete (fracpete at waikato dot ac dot nz)
    */
   public static class Listener
-    implements TraversalListener {
+      implements TraversalListener {
 
     /** for caching all classes on the class path (package-name &lt;-&gt; Set with classnames). */
     protected Map<String,Set<String>> m_NameCache;
@@ -102,7 +102,7 @@ public class ClassCache
 
       // add to package cache
       if (!m_NameCache.containsKey(pkgname))
-        m_NameCache.put(pkgname, new HashSet<>());
+	m_NameCache.put(pkgname, new HashSet<>());
       m_NameCache.get(pkgname).add(classname);
 
       // add to classpath part cache
@@ -282,7 +282,7 @@ public class ClassCache
     pattern = Pattern.compile(regexp);
     for (String pkg: m_NameCache.keySet()) {
       if (pattern.matcher(pkg).matches())
-        result.add(pkg);
+	result.add(pkg);
     }
     return result.iterator();
   }
@@ -341,9 +341,37 @@ public class ClassCache
     pattern = Pattern.compile(regexp);
     for (URL part : m_ClasspathPartCache.keySet()) {
       if (pattern.matcher(part.toExternalForm()).matches())
-        result.add(part);
+	result.add(part);
     }
     return result.iterator();
+  }
+
+  /**
+   * Returns the classpath parts that contain the specified class (eg to find duplicates).
+   *
+   * @param cls	the class to look for
+   * @return		the parts of the classpath the class was located in
+   */
+  public List<URL> classpathPartsForClass(Class cls) {
+    return classpathPartsForClass(cls.getName());
+  }
+
+  /**
+   * Returns the classpath parts that contain the specified class (eg to find duplicates).
+   *
+   * @param classname	the class to look for
+   * @return		the parts of the classpath the class was located in
+   */
+  public List<URL> classpathPartsForClass(String classname) {
+    List<URL>  		result;
+
+    result = new ArrayList<>();
+    for (URL part : m_ClasspathPartCache.keySet()) {
+      if (m_ClasspathPartCache.get(part).contains(classname))
+        result.add(part);
+    }
+
+    return result;
   }
 
   /**

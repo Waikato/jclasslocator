@@ -15,7 +15,7 @@
 
 /*
  * ClassLocator.java
- * Copyright (C) 2005-2020 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2005-2021 University of Waikato, Hamilton, New Zealand
  *
  */
 
@@ -24,6 +24,7 @@ package nz.ac.waikato.cms.locator;
 import java.awt.HeadlessException;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -458,6 +459,27 @@ public class ClassLocator
     Collections.sort(result, new StringCompare());
 
     return result;
+  }
+
+
+  /**
+   * Returns the classpath parts that contain the specified class (eg to find duplicates).
+   *
+   * @param cls	the class to look for
+   * @return		the parts of the classpath the class was located in
+   */
+  public List<URL> classpathPartsForClass(Class cls) {
+    return classpathPartsForClass(cls.getName());
+  }
+
+  /**
+   * Returns the classpath parts that contain the specified class (eg to find duplicates).
+   *
+   * @param classname	the class to look for
+   * @return		the parts of the classpath the class was located in
+   */
+  public List<URL> classpathPartsForClass(String classname) {
+    return m_Cache.classpathPartsForClass(classname);
   }
 
   /**
