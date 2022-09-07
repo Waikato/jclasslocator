@@ -15,7 +15,7 @@
 
 /*
  * AbstractClassTraversal.java
- * Copyright (C) 2010-2018 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2010-2022 University of Waikato, Hamilton, New Zealand
  */
 package nz.ac.waikato.cms.locator;
 
@@ -74,6 +74,23 @@ public abstract class AbstractClassTraversal
   protected transient Logger m_Logger;
 
   /**
+   * Default constructor.
+   *
+   * @see #initialize()
+   */
+  protected AbstractClassTraversal() {
+    initialize();
+  }
+
+  /**
+   * For initializing the traversal.
+   * <br>
+   * Default implementation does nothing.
+   */
+  protected void initialize() {
+  }
+
+  /**
    * Returns whether logging is enabled.
    *
    * @return		true if enabled
@@ -100,5 +117,6 @@ public abstract class AbstractClassTraversal
    *
    * @param listener 	the listener to use
    */
+  @Override
   public abstract void traverse(TraversalListener listener);
 }

@@ -15,9 +15,12 @@
 
 /*
  * ClassCache.java
- * Copyright (C) 2010-2018 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2010-2022 University of Waikato, Hamilton, New Zealand
  */
 package nz.ac.waikato.cms.locator;
+
+import nz.ac.waikato.cms.locator.blacklisting.AllWhitelisted;
+import nz.ac.waikato.cms.locator.blacklisting.Blacklister;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -44,7 +47,8 @@ import java.util.logging.Level;
  * @author  fracpete (fracpete at waikato dot ac dot nz)
  */
 public class ClassPathTraversal
-  extends AbstractClassTraversal {
+  extends AbstractClassTraversal
+  implements ClassTraversalWithBlacklister {
 
   /** for serialization. */
   private static final long serialVersionUID = -2973185784363491578L;
@@ -136,6 +140,37 @@ public class ClassPathTraversal
     public TraversalListener getListener() {
       return m_Listener;
     }
+  }
+
+  /** the blacklister to use. */
+  protected Blacklister m_Blacklister;
+
+  /**
+   * For initializing the traversal.
+   */
+  @Override
+  protected void initialize() {
+    super.initialize();
+
+    m_Blacklister = new AllWhitelisted();
+  }
+
+  /**
+   * Sets the blacklister to use.
+   *
+   * @param value	the blacklister
+   */
+  public void setBlacklister(Blacklister value) {
+    m_Blacklister = value;
+  }
+
+  /**
+   * Returns the current blacklister.
+   *
+   * @return		the blacklister
+   */
+  public Blacklister getBlacklister() {
+    return m_Blacklister;
   }
 
   /**
@@ -293,10 +328,24 @@ public class ClassPathTraversal
     }
 
     // find classes
-    if (file.isDirectory())
-      traverseDir(file, state);
-    else if (file.exists())
-      traverseJar(file, state);
+    if (file.isDirectory()) {
+      if (m_Blacklister.isBlacklistedDir(file)) {
+        if (isLoggingEnabled())
+          getLogger().log(Level.INFO, "Blacklisted dir: " + file);
+      }
+      else {
+        traverseDir(file, state);
+      }
+    }
+    else if (file.exists()) {
+      if (m_Blacklister.isBlacklistedFile(file)) {
+        if (isLoggingEnabled())
+          getLogger().log(Level.INFO, "Blacklisted file: " + file);
+      }
+      else {
+        traverseJar(file, state);
+      }
+    }
   }
   
   /**
@@ -304,6 +353,7 @@ public class ClassPathTraversal
    *
    * @param listener 	the listener to use
    */
+  @Override
   public void traverse(TraversalListener listener) {
     String		part;
     URLClassLoader 	sysLoader;
