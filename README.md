@@ -213,6 +213,6 @@ Add the following dependency to your `pom.xml`:
     <dependency>
       <groupId>com.github.waikato</groupId>
       <artifactId>jclasslocator</artifactId>
-      <version>0.0.20</version>
+      <version>0.0.21</version>
     </dependency>
 ```
