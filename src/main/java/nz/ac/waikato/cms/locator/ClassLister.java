@@ -15,7 +15,7 @@
 
 /*
  * ClassLister.java
- * Copyright (C) 2007-2020 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2007-2022 University of Waikato, Hamilton, New Zealand
  */
 
 package nz.ac.waikato.cms.locator;
@@ -69,7 +69,7 @@ import java.util.regex.Pattern;
  * @author  fracpete (fracpete at waikato dot ac dot nz)
  */
 public class ClassLister
-  implements Serializable {
+    implements Serializable {
 
   /** for serialization. */
   private static final long serialVersionUID = 8482163084925911272L;
@@ -110,6 +110,9 @@ public class ClassLister
   /** the class traversal to use. */
   protected ClassTraversal m_ClassTraversal;
 
+  /** whether everything has been cached. */
+  protected boolean m_AllCached;
+
   /** the singleton. */
   protected static Map<Class<? extends ClassTraversal>, ClassLister> m_Singleton;
 
@@ -126,6 +129,7 @@ public class ClassLister
   protected ClassLister(ClassTraversal traversal) {
     super();
 
+    m_AllCached      = false;
     m_ClassTraversal = traversal;
     setPackages(load("nz/ac/waikato/cms/locator/ClassLister.props"));
     setBlacklist(load("nz/ac/waikato/cms/locator/ClassLister.blacklist"));
@@ -243,8 +247,8 @@ public class ClassLister
     }
     else {
       for (String name: names) {
-        if (!list.get(superclass).contains(name))
-          list.get(superclass).add(name);
+	if (!list.get(superclass).contains(name))
+	  list.get(superclass).add(name);
       }
     }
   }
@@ -276,8 +280,8 @@ public class ClassLister
     }
     else {
       for (Class cls : classes) {
-        if (!list.get(superclass).contains(cls))
-          list.get(superclass).add(cls);
+	if (!list.get(superclass).contains(cls))
+	  list.get(superclass).add(cls);
       }
     }
   }
@@ -319,29 +323,29 @@ public class ClassLister
     // remove blacklisted classes
     if (m_Blacklist.containsKey(superclass)) {
       try {
-        patterns = m_Blacklist.getProperty(superclass).replaceAll(" ", "").split(",");
-        for (String pattern: patterns) {
-          p = Pattern.compile(pattern);
-          // names
-          i = 0;
-          while (i < names.size()) {
-            if (p.matcher(names.get(i)).matches())
-              names.remove(i);
-            else
-              i++;
-          }
-          // classes
-          i = 0;
-          while (i < classes.size()) {
-            if (p.matcher(classes.get(i).getName()).matches())
-              classes.remove(i);
-            else
-              i++;
-          }
-        }
+	patterns = m_Blacklist.getProperty(superclass).replaceAll(" ", "").split(",");
+	for (String pattern: patterns) {
+	  p = Pattern.compile(pattern);
+	  // names
+	  i = 0;
+	  while (i < names.size()) {
+	    if (p.matcher(names.get(i)).matches())
+	      names.remove(i);
+	    else
+	      i++;
+	  }
+	  // classes
+	  i = 0;
+	  while (i < classes.size()) {
+	    if (p.matcher(classes.get(i).getName()).matches())
+	      classes.remove(i);
+	    else
+	      i++;
+	  }
+	}
       }
       catch (Exception ex) {
-        getLogger().log(Level.SEVERE, "Failed to blacklist classes for superclass '" +  superclass + "':", ex);
+	getLogger().log(Level.SEVERE, "Failed to blacklist classes for superclass '" +  superclass + "':", ex);
       }
     }
     // create class list
@@ -368,29 +372,29 @@ public class ClassLister
     classList = new ArrayList<>(Arrays.asList(classes));
     if (m_Blacklist.containsKey(superclass.getName())) {
       try {
-        patterns = m_Blacklist.getProperty(superclass.getName()).replaceAll(" ", "").split(",");
-        for (String pattern: patterns) {
-          p = Pattern.compile(pattern);
-          // names
-          i = 0;
-          while (i < classList.size()) {
-            if (p.matcher(classList.get(i).getName()).matches())
-              classList.remove(i);
-            else
-              i++;
-          }
-          // classes
-          i = 0;
-          while (i < classList.size()) {
-            if (p.matcher(classList.get(i).getName()).matches())
-              classList.remove(i);
-            else
-              i++;
-          }
-        }
+	patterns = m_Blacklist.getProperty(superclass.getName()).replaceAll(" ", "").split(",");
+	for (String pattern: patterns) {
+	  p = Pattern.compile(pattern);
+	  // names
+	  i = 0;
+	  while (i < classList.size()) {
+	    if (p.matcher(classList.get(i).getName()).matches())
+	      classList.remove(i);
+	    else
+	      i++;
+	  }
+	  // classes
+	  i = 0;
+	  while (i < classList.size()) {
+	    if (p.matcher(classList.get(i).getName()).matches())
+	      classList.remove(i);
+	    else
+	      i++;
+	  }
+	}
       }
       catch (Exception ex) {
-        getLogger().log(Level.SEVERE, "Failed to blacklist classes for superclass '" + superclass.getName() + "':", ex);
+	getLogger().log(Level.SEVERE, "Failed to blacklist classes for superclass '" + superclass.getName() + "':", ex);
       }
     }
 
@@ -409,35 +413,56 @@ public class ClassLister
    * loads the props file and interpretes it.
    */
   public void initialize() {
-    Enumeration		enm;
-    String		superclass;
+    m_CacheNames        = new HashMap<>();
+    m_ListNames         = new HashMap<>();
+    m_CacheClasses      = new HashMap<>();
+    m_ListClasses       = new HashMap<>();
+    m_ManagedClassnames = new HashSet<>();
+    m_ManagedClasses    = new HashSet<>();
+  }
+
+  /**
+   * Updates the caches for the specified super class, if necessary.
+   *
+   * @param superclass  the superclass to update
+   */
+  protected void updateCaches(String superclass) {
     String[]		packages;
 
-    try {
-      m_CacheNames   = new HashMap<>();
-      m_ListNames    = new HashMap<>();
-      m_CacheClasses = new HashMap<>();
-      m_ListClasses  = new HashMap<>();
+    if (m_CacheNames.containsKey(superclass))
+      return;
 
-      enm = m_Packages.propertyNames();
-      while (enm.hasMoreElements()) {
-        superclass = (String) enm.nextElement();
-        packages   = m_Packages.getProperty(superclass).replaceAll(" ", "").split(",");
-        addHierarchy(superclass, packages);
-      }
+    try {
+      packages = m_Packages.getProperty(superclass).replaceAll(" ", "").split(",");
+      addHierarchy(superclass, packages);
     }
     catch (Exception e) {
-      getLogger().log(Level.SEVERE, "Failed to determine packages/classes:", e);
-      m_Packages = new Properties();
+      getLogger().log(Level.SEVERE, "Failed to determine packages/classes for: " + superclass, e);
     }
 
-    // store managed classes
-    m_ManagedClassnames = new HashSet<>();
-    for (String sclass: m_CacheNames.keySet())
-      m_ManagedClassnames.addAll(m_CacheNames.get(sclass));
-    m_ManagedClasses = new HashSet<>();
-    for (String sclass: m_CacheClasses.keySet())
-      m_ManagedClasses.addAll(m_CacheClasses.get(sclass));
+    m_ManagedClassnames.addAll(m_CacheNames.get(superclass));
+    m_ManagedClasses.addAll(m_CacheClasses.get(superclass));
+  }
+
+  /**
+   * Updates the caches for the specified super class, if necessary.
+   */
+  protected void updateCaches() {
+    Enumeration		enm;
+    String		superclass;
+
+    if (m_AllCached)
+      return;
+
+    enm = m_Packages.propertyNames();
+    while (enm.hasMoreElements()) {
+      superclass = (String) enm.nextElement();
+      if (m_CacheNames.containsKey(superclass))
+	continue;
+      updateCaches(superclass);
+    }
+
+    m_AllCached = true;
   }
 
   /**
@@ -448,6 +473,8 @@ public class ClassLister
    */
   public String[] getClassnames(Class superclass) {
     List<String>	list;
+
+    updateCaches(superclass.getName());
 
     list = m_ListNames.get(superclass.getName());
     if (list == null)
@@ -463,6 +490,8 @@ public class ClassLister
    * @return		the classes of the derived classes
    */
   public Class[] getClasses(Class superclass) {
+    updateCaches(superclass.getName());
+
     return getClasses(superclass.getName());
   }
 
@@ -474,6 +503,8 @@ public class ClassLister
    */
   public Class[] getClasses(String superclass) {
     List<Class>	list;
+
+    updateCaches(superclass);
 
     list = m_ListClasses.get(superclass);
     if (list == null)
@@ -489,6 +520,8 @@ public class ClassLister
    * @return		the superclass(es)
    */
   public String[] getSuperclasses(Class cls) {
+    updateCaches();
+
     return getSuperclasses(cls.getName());
   }
 
@@ -501,11 +534,13 @@ public class ClassLister
   public String[] getSuperclasses(String cls) {
     List<String>	result;
 
+    updateCaches();
+
     result = new ArrayList<>();
 
     for (String superclass: m_CacheNames.keySet()) {
       if (m_CacheNames.get(superclass).contains(cls))
-        result.add(superclass);
+	result.add(superclass);
     }
 
     if (result.size() > 1)
@@ -521,223 +556,238 @@ public class ClassLister
    */
   public String[] getSuperclasses() {
     List<String>	result;
+    Enumeration		enm;
 
-    result = new ArrayList<>(m_CacheNames.keySet());
+    result = new ArrayList<>();
+    enm = m_Packages.propertyNames();
+    while (enm.hasMoreElements())
+      result.add((String) enm.nextElement());
+
     Collections.sort(result);
 
-    return result.toArray(new String[result.size()]);
+    return result.toArray(new String[0]);
   }
 
-  /**
-   * Returns all the packages that were found for this superclass.
-   *
-   * @param superclass	the superclass to return the packages for
-   * @return		the packages
-   */
-  public String[] getPackages(Class superclass) {
-    return getPackages(superclass.getName());
-  }
+    /**
+     * Returns all the packages that were found for this superclass.
+     *
+     * @param superclass	the superclass to return the packages for
+     * @return		the packages
+     */
+    public String[] getPackages(Class superclass) {
+      return getPackages(superclass.getName());
+    }
 
-  /**
-   * Returns all the packages that were found for this superclass.
-   *
-   * @param superclass	the superclass to return the packages for
-   * @return		the packages
-   */
-  public String[] getPackages(String superclass) {
-    String	packages;
+    /**
+     * Returns all the packages that were found for this superclass.
+     *
+     * @param superclass	the superclass to return the packages for
+     * @return		the packages
+     */
+    public String[] getPackages(String superclass) {
+      String	packages;
 
-    packages = m_Packages.getProperty(superclass);
-    if ((packages == null) || (packages.length() == 0))
-      return new String[0];
-    else
-      return packages.split(",");
-  }
+      packages = m_Packages.getProperty(superclass);
+      if ((packages == null) || (packages.length() == 0))
+	return new String[0];
+      else
+	return packages.split(",");
+    }
 
-  /**
-   * Returns the superclass-packages relation.
-   *
-   * @return		the properties object listing the packages
-   */
-  public Properties getPackages() {
-    return m_Packages;
-  }
+    /**
+     * Returns the superclass-packages relation.
+     *
+     * @return		the properties object listing the packages
+     */
+    public Properties getPackages() {
+      return m_Packages;
+    }
 
-  /**
-   * Checks whether the class is listed in one of the hierarchies.
-   *
-   * @param cls		the class to check
-   * @return		true if listed
-   */
-  public boolean isManaged(Class cls) {
-    return m_ManagedClasses.contains(cls);
-  }
+    /**
+     * Checks whether the class is listed in one of the hierarchies.
+     *
+     * @param cls		the class to check
+     * @return		true if listed
+     */
+    public boolean isManaged(Class cls) {
+      updateCaches();
+      return m_ManagedClasses.contains(cls);
+    }
 
-  /**
-   * Returns the set of managed classes.
-   *
-   * @return		the set
-   */
-  public Set<Class> getManagedClasses() {
-    return m_ManagedClasses;
-  }
+    /**
+     * Returns the set of managed classes.
+     *
+     * @return		the set
+     */
+    public Set<Class> getManagedClasses() {
+      updateCaches();
+      return m_ManagedClasses;
+    }
 
-  /**
-   * Checks whether the classname is listed in one of the hierarchies.
-   *
-   * @param classname	the classname to check
-   * @return		true if listed
-   */
-  public boolean isManaged(String classname) {
-    return m_ManagedClassnames.contains(classname);
-  }
+    /**
+     * Checks whether the classname is listed in one of the hierarchies.
+     *
+     * @param classname	the classname to check
+     * @return		true if listed
+     */
+    public boolean isManaged(String classname) {
+      updateCaches();
+      return m_ManagedClassnames.contains(classname);
+    }
 
-  /**
-   * Returns the set of managed class names.
-   *
-   * @return		the set
-   */
-  public Set<String> getManagedClassnames() {
-    return m_ManagedClassnames;
-  }
+    /**
+     * Returns the set of managed class names.
+     *
+     * @return		the set
+     */
+    public Set<String> getManagedClassnames() {
+      updateCaches();
+      return m_ManagedClassnames;
+    }
 
-  /**
-   * Returns the class hierarchies as properties object, with the superclasses
-   * as keys and the values representing comma-separated lists of classnames.
-   *
-   * @return		the generated properties
-   */
-  public Properties toProperties() {
-    Properties		result;
-    StringBuilder	classes;
+    /**
+     * Returns the class hierarchies as properties object, with the superclasses
+     * as keys and the values representing comma-separated lists of classnames.
+     *
+     * @return		the generated properties
+     */
+    public Properties toProperties() {
+      Properties		result;
+      StringBuilder	classes;
 
-    result = new Properties();
-    for (String superclass: getSuperclasses()) {
-      classes = new StringBuilder();
-      for (Class cls: getClasses(superclass)) {
-        if (classes.length() > 0)
-          classes.append(",");
-        classes.append(cls.getName());
+      updateCaches();
+
+      result = new Properties();
+      for (String superclass: getSuperclasses()) {
+	classes = new StringBuilder();
+	for (Class cls: getClasses(superclass)) {
+	  if (classes.length() > 0)
+	    classes.append(",");
+	  classes.append(cls.getName());
+	}
+	result.setProperty(superclass, classes.toString());
       }
-      result.setProperty(superclass, classes.toString());
+
+      return result;
     }
 
-    return result;
-  }
+    /**
+     * Returns the class hierarchies as properties object, with the superclasses
+     * as keys and the values representing comma-separated lists of packages.
+     *
+     * @return		the generated properties
+     */
+    public Properties toPackages() {
+      Properties		result;
+      StringBuilder 	pkgs;
 
-  /**
-   * Returns the class hierarchies as properties object, with the superclasses
-   * as keys and the values representing comma-separated lists of packages.
-   *
-   * @return		the generated properties
-   */
-  public Properties toPackages() {
-    Properties		result;
-    StringBuilder 	pkgs;
+      updateCaches();
 
-    result = new Properties();
-    for (String superclass: getSuperclasses()) {
-      pkgs = new StringBuilder();
-      for (String pkg : getPackages(superclass)) {
-        if (pkgs.length() > 0)
-          pkgs.append(",");
-        pkgs.append(pkg);
+      result = new Properties();
+      for (String superclass: getSuperclasses()) {
+	pkgs = new StringBuilder();
+	for (String pkg : getPackages(superclass)) {
+	  if (pkgs.length() > 0)
+	    pkgs.append(",");
+	  pkgs.append(pkg);
+	}
+	result.setProperty(superclass, pkgs.toString());
       }
-      result.setProperty(superclass, pkgs.toString());
+
+      return result;
     }
 
-    return result;
-  }
+    /**
+     * Only prints the generated props file with all the classnames, based on
+     * the package names for the individual packages.
+     *
+     * @return		the props file with the classnames
+     */
+    @Override
+    public String toString() {
+      StringBuilder	result;
+      List<String>	keys;
 
-  /**
-   * Only prints the generated props file with all the classnames, based on
-   * the package names for the individual packages.
-   *
-   * @return		the props file with the classnames
-   */
-  @Override
-  public String toString() {
-    StringBuilder	result;
-    List<String>	keys;
+      updateCaches();
 
-    result = new StringBuilder();
+      result = new StringBuilder();
 
-    keys = new ArrayList<>(m_ListNames.keySet());
-    Collections.sort(keys);
-    for (String key: keys) {
-      result.append(key).append("\n");
-      result.append(ClassUtils.flatten(m_ListNames.get(key), ",")).append("\n\n");
+      keys = new ArrayList<>(m_ListNames.keySet());
+      Collections.sort(keys);
+      for (String key: keys) {
+	result.append(key).append("\n");
+	result.append(ClassUtils.flatten(m_ListNames.get(key), ",")).append("\n\n");
+      }
+
+      return result.toString();
     }
 
-    return result.toString();
-  }
-
-  /**
-   * Returns the singleton instance of the class lister.
-   *
-   * @return		the singleton
-   */
-  public static synchronized ClassLister getSingleton() {
-    return getSingleton(null);
-  }
-
-  /**
-   * Returns the singleton instance of the class lister.
-   *
-   * @param traversal	the class traversal to use, can be null for default one
-   * @return		the singleton
-   */
-  public static synchronized ClassLister getSingleton(ClassTraversal traversal) {
-    Class<? extends ClassTraversal>	cls;
-
-    cls = (traversal == null) ? null : traversal.getClass();
-    if (m_Singleton == null)
-      m_Singleton = new HashMap<>();
-    if (!m_Singleton.containsKey(cls))
-      m_Singleton.put(cls, new ClassLister(traversal));
-
-    return m_Singleton.get(cls);
-  }
-
-  /**
-   * Loads the properties from the classpath.
-   *
-   * @param props	the path, e.g., "nz/ac/waikato/cms/locator/ClassLister.props"
-   * @return		the properties
-   */
-  public static Properties load(String props) {
-    return load(props, new Properties());
-  }
-
-  /**
-   * Loads the properties from the classpath.
-   *
-   * @param props	the path, e.g., "nz/ac/waikato/cms/locator/ClassLister.props"
-   * @return		the properties, the default ones if failed to load
-   */
-  public static Properties load(String props, Properties defProps) {
-    Properties		result;
-    InputStream		is;
-
-    result = new Properties(defProps);
-    is     = null;
-    try {
-      is = ClassLoader.getSystemResourceAsStream(props);
-      result.load(is);
+    /**
+     * Returns the singleton instance of the class lister.
+     *
+     * @return		the singleton
+     */
+    public static synchronized ClassLister getSingleton() {
+      return getSingleton(null);
     }
-    catch (Exception e) {
-      result = defProps;
+
+    /**
+     * Returns the singleton instance of the class lister.
+     *
+     * @param traversal	the class traversal to use, can be null for default one
+     * @return		the singleton
+     */
+    public static synchronized ClassLister getSingleton(ClassTraversal traversal) {
+      Class<? extends ClassTraversal>	cls;
+
+      cls = (traversal == null) ? null : traversal.getClass();
+      if (m_Singleton == null)
+	m_Singleton = new HashMap<>();
+      if (!m_Singleton.containsKey(cls))
+	m_Singleton.put(cls, new ClassLister(traversal));
+
+      return m_Singleton.get(cls);
     }
-    finally {
+
+    /**
+     * Loads the properties from the classpath.
+     *
+     * @param props	the path, e.g., "nz/ac/waikato/cms/locator/ClassLister.props"
+     * @return		the properties
+     */
+    public static Properties load(String props) {
+      return load(props, new Properties());
+    }
+
+    /**
+     * Loads the properties from the classpath.
+     *
+     * @param props	the path, e.g., "nz/ac/waikato/cms/locator/ClassLister.props"
+     * @return		the properties, the default ones if failed to load
+     */
+    public static Properties load(String props, Properties defProps) {
+      Properties		result;
+      InputStream		is;
+
+      result = new Properties(defProps);
+      is     = null;
       try {
-	if (is != null)
-	  is.close();
+	is = ClassLoader.getSystemResourceAsStream(props);
+	result.load(is);
       }
       catch (Exception e) {
-	// ignored
+	result = defProps;
       }
-    }
+      finally {
+	try {
+	  if (is != null)
+	    is.close();
+	}
+	catch (Exception e) {
+	  // ignored
+	}
+      }
 
-    return result;
+      return result;
+    }
   }
-}
