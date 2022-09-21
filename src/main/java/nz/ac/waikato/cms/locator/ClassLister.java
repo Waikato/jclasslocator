@@ -422,6 +422,23 @@ public class ClassLister
   }
 
   /**
+   * Extracts the package from the superclass.
+   *
+   * @param superclass	the superclass to get the package from
+   * @return		the package or null if failed to extract
+   */
+  protected String extractPackage(String superclass) {
+    String	result;
+
+    result = null;
+
+    if ((superclass != null) && superclass.contains("."))
+      result = superclass.substring(0, superclass.lastIndexOf('.'));
+
+    return result;
+  }
+
+  /**
    * Updates the caches for the specified super class, if necessary.
    *
    * @param superclass  the superclass to update
@@ -433,7 +450,7 @@ public class ClassLister
       return;
 
     try {
-      packages = m_Packages.getProperty(superclass).replaceAll(" ", "").split(",");
+      packages = m_Packages.getProperty(superclass, extractPackage(superclass)).replaceAll(" ", "").split(",");
       addHierarchy(superclass, packages);
     }
     catch (Exception e) {
@@ -568,226 +585,226 @@ public class ClassLister
     return result.toArray(new String[0]);
   }
 
-    /**
-     * Returns all the packages that were found for this superclass.
-     *
-     * @param superclass	the superclass to return the packages for
-     * @return		the packages
-     */
-    public String[] getPackages(Class superclass) {
-      return getPackages(superclass.getName());
-    }
+  /**
+   * Returns all the packages that were found for this superclass.
+   *
+   * @param superclass	the superclass to return the packages for
+   * @return		the packages
+   */
+  public String[] getPackages(Class superclass) {
+    return getPackages(superclass.getName());
+  }
 
-    /**
-     * Returns all the packages that were found for this superclass.
-     *
-     * @param superclass	the superclass to return the packages for
-     * @return		the packages
-     */
-    public String[] getPackages(String superclass) {
-      String	packages;
+  /**
+   * Returns all the packages that were found for this superclass.
+   *
+   * @param superclass	the superclass to return the packages for
+   * @return		the packages
+   */
+  public String[] getPackages(String superclass) {
+    String	packages;
 
-      packages = m_Packages.getProperty(superclass);
-      if ((packages == null) || (packages.length() == 0))
-	return new String[0];
-      else
-	return packages.split(",");
-    }
+    packages = m_Packages.getProperty(superclass);
+    if ((packages == null) || (packages.length() == 0))
+      return new String[0];
+    else
+      return packages.split(",");
+  }
 
-    /**
-     * Returns the superclass-packages relation.
-     *
-     * @return		the properties object listing the packages
-     */
-    public Properties getPackages() {
-      return m_Packages;
-    }
+  /**
+   * Returns the superclass-packages relation.
+   *
+   * @return		the properties object listing the packages
+   */
+  public Properties getPackages() {
+    return m_Packages;
+  }
 
-    /**
-     * Checks whether the class is listed in one of the hierarchies.
-     *
-     * @param cls		the class to check
-     * @return		true if listed
-     */
-    public boolean isManaged(Class cls) {
-      updateCaches();
-      return m_ManagedClasses.contains(cls);
-    }
+  /**
+   * Checks whether the class is listed in one of the hierarchies.
+   *
+   * @param cls		the class to check
+   * @return		true if listed
+   */
+  public boolean isManaged(Class cls) {
+    updateCaches();
+    return m_ManagedClasses.contains(cls);
+  }
 
-    /**
-     * Returns the set of managed classes.
-     *
-     * @return		the set
-     */
-    public Set<Class> getManagedClasses() {
-      updateCaches();
-      return m_ManagedClasses;
-    }
+  /**
+   * Returns the set of managed classes.
+   *
+   * @return		the set
+   */
+  public Set<Class> getManagedClasses() {
+    updateCaches();
+    return m_ManagedClasses;
+  }
 
-    /**
-     * Checks whether the classname is listed in one of the hierarchies.
-     *
-     * @param classname	the classname to check
-     * @return		true if listed
-     */
-    public boolean isManaged(String classname) {
-      updateCaches();
-      return m_ManagedClassnames.contains(classname);
-    }
+  /**
+   * Checks whether the classname is listed in one of the hierarchies.
+   *
+   * @param classname	the classname to check
+   * @return		true if listed
+   */
+  public boolean isManaged(String classname) {
+    updateCaches();
+    return m_ManagedClassnames.contains(classname);
+  }
 
-    /**
-     * Returns the set of managed class names.
-     *
-     * @return		the set
-     */
-    public Set<String> getManagedClassnames() {
-      updateCaches();
-      return m_ManagedClassnames;
-    }
+  /**
+   * Returns the set of managed class names.
+   *
+   * @return		the set
+   */
+  public Set<String> getManagedClassnames() {
+    updateCaches();
+    return m_ManagedClassnames;
+  }
 
-    /**
-     * Returns the class hierarchies as properties object, with the superclasses
-     * as keys and the values representing comma-separated lists of classnames.
-     *
-     * @return		the generated properties
-     */
-    public Properties toProperties() {
-      Properties		result;
-      StringBuilder	classes;
+  /**
+   * Returns the class hierarchies as properties object, with the superclasses
+   * as keys and the values representing comma-separated lists of classnames.
+   *
+   * @return		the generated properties
+   */
+  public Properties toProperties() {
+    Properties		result;
+    StringBuilder	classes;
 
-      updateCaches();
+    updateCaches();
 
-      result = new Properties();
-      for (String superclass: getSuperclasses()) {
-	classes = new StringBuilder();
-	for (Class cls: getClasses(superclass)) {
-	  if (classes.length() > 0)
-	    classes.append(",");
-	  classes.append(cls.getName());
-	}
-	result.setProperty(superclass, classes.toString());
+    result = new Properties();
+    for (String superclass: getSuperclasses()) {
+      classes = new StringBuilder();
+      for (Class cls: getClasses(superclass)) {
+	if (classes.length() > 0)
+	  classes.append(",");
+	classes.append(cls.getName());
       }
-
-      return result;
+      result.setProperty(superclass, classes.toString());
     }
 
-    /**
-     * Returns the class hierarchies as properties object, with the superclasses
-     * as keys and the values representing comma-separated lists of packages.
-     *
-     * @return		the generated properties
-     */
-    public Properties toPackages() {
-      Properties		result;
-      StringBuilder 	pkgs;
+    return result;
+  }
 
-      updateCaches();
+  /**
+   * Returns the class hierarchies as properties object, with the superclasses
+   * as keys and the values representing comma-separated lists of packages.
+   *
+   * @return		the generated properties
+   */
+  public Properties toPackages() {
+    Properties		result;
+    StringBuilder 	pkgs;
 
-      result = new Properties();
-      for (String superclass: getSuperclasses()) {
-	pkgs = new StringBuilder();
-	for (String pkg : getPackages(superclass)) {
-	  if (pkgs.length() > 0)
-	    pkgs.append(",");
-	  pkgs.append(pkg);
-	}
-	result.setProperty(superclass, pkgs.toString());
+    updateCaches();
+
+    result = new Properties();
+    for (String superclass: getSuperclasses()) {
+      pkgs = new StringBuilder();
+      for (String pkg : getPackages(superclass)) {
+	if (pkgs.length() > 0)
+	  pkgs.append(",");
+	pkgs.append(pkg);
       }
-
-      return result;
+      result.setProperty(superclass, pkgs.toString());
     }
 
-    /**
-     * Only prints the generated props file with all the classnames, based on
-     * the package names for the individual packages.
-     *
-     * @return		the props file with the classnames
-     */
-    @Override
-    public String toString() {
-      StringBuilder	result;
-      List<String>	keys;
+    return result;
+  }
 
-      updateCaches();
+  /**
+   * Only prints the generated props file with all the classnames, based on
+   * the package names for the individual packages.
+   *
+   * @return		the props file with the classnames
+   */
+  @Override
+  public String toString() {
+    StringBuilder	result;
+    List<String>	keys;
 
-      result = new StringBuilder();
+    updateCaches();
 
-      keys = new ArrayList<>(m_ListNames.keySet());
-      Collections.sort(keys);
-      for (String key: keys) {
-	result.append(key).append("\n");
-	result.append(ClassUtils.flatten(m_ListNames.get(key), ",")).append("\n\n");
-      }
+    result = new StringBuilder();
 
-      return result.toString();
+    keys = new ArrayList<>(m_ListNames.keySet());
+    Collections.sort(keys);
+    for (String key: keys) {
+      result.append(key).append("\n");
+      result.append(ClassUtils.flatten(m_ListNames.get(key), ",")).append("\n\n");
     }
 
-    /**
-     * Returns the singleton instance of the class lister.
-     *
-     * @return		the singleton
-     */
-    public static synchronized ClassLister getSingleton() {
-      return getSingleton(null);
+    return result.toString();
+  }
+
+  /**
+   * Returns the singleton instance of the class lister.
+   *
+   * @return		the singleton
+   */
+  public static synchronized ClassLister getSingleton() {
+    return getSingleton(null);
+  }
+
+  /**
+   * Returns the singleton instance of the class lister.
+   *
+   * @param traversal	the class traversal to use, can be null for default one
+   * @return		the singleton
+   */
+  public static synchronized ClassLister getSingleton(ClassTraversal traversal) {
+    Class<? extends ClassTraversal>	cls;
+
+    cls = (traversal == null) ? null : traversal.getClass();
+    if (m_Singleton == null)
+      m_Singleton = new HashMap<>();
+    if (!m_Singleton.containsKey(cls))
+      m_Singleton.put(cls, new ClassLister(traversal));
+
+    return m_Singleton.get(cls);
+  }
+
+  /**
+   * Loads the properties from the classpath.
+   *
+   * @param props	the path, e.g., "nz/ac/waikato/cms/locator/ClassLister.props"
+   * @return		the properties
+   */
+  public static Properties load(String props) {
+    return load(props, new Properties());
+  }
+
+  /**
+   * Loads the properties from the classpath.
+   *
+   * @param props	the path, e.g., "nz/ac/waikato/cms/locator/ClassLister.props"
+   * @return		the properties, the default ones if failed to load
+   */
+  public static Properties load(String props, Properties defProps) {
+    Properties		result;
+    InputStream		is;
+
+    result = new Properties(defProps);
+    is     = null;
+    try {
+      is = ClassLoader.getSystemResourceAsStream(props);
+      result.load(is);
     }
-
-    /**
-     * Returns the singleton instance of the class lister.
-     *
-     * @param traversal	the class traversal to use, can be null for default one
-     * @return		the singleton
-     */
-    public static synchronized ClassLister getSingleton(ClassTraversal traversal) {
-      Class<? extends ClassTraversal>	cls;
-
-      cls = (traversal == null) ? null : traversal.getClass();
-      if (m_Singleton == null)
-	m_Singleton = new HashMap<>();
-      if (!m_Singleton.containsKey(cls))
-	m_Singleton.put(cls, new ClassLister(traversal));
-
-      return m_Singleton.get(cls);
+    catch (Exception e) {
+      result = defProps;
     }
-
-    /**
-     * Loads the properties from the classpath.
-     *
-     * @param props	the path, e.g., "nz/ac/waikato/cms/locator/ClassLister.props"
-     * @return		the properties
-     */
-    public static Properties load(String props) {
-      return load(props, new Properties());
-    }
-
-    /**
-     * Loads the properties from the classpath.
-     *
-     * @param props	the path, e.g., "nz/ac/waikato/cms/locator/ClassLister.props"
-     * @return		the properties, the default ones if failed to load
-     */
-    public static Properties load(String props, Properties defProps) {
-      Properties		result;
-      InputStream		is;
-
-      result = new Properties(defProps);
-      is     = null;
+    finally {
       try {
-	is = ClassLoader.getSystemResourceAsStream(props);
-	result.load(is);
+	if (is != null)
+	  is.close();
       }
       catch (Exception e) {
-	result = defProps;
+	// ignored
       }
-      finally {
-	try {
-	  if (is != null)
-	    is.close();
-	}
-	catch (Exception e) {
-	  // ignored
-	}
-      }
-
-      return result;
     }
+
+    return result;
   }
+}
