@@ -15,7 +15,7 @@
 
 /*
  * ClassLister.java
- * Copyright (C) 2007-2022 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2007-2025 University of Waikato, Hamilton, New Zealand
  */
 
 package nz.ac.waikato.cms.locator;
@@ -125,6 +125,8 @@ public class ClassLister
 
   /**
    * Initializes the classlister.
+   *
+   * @param traversal 	the traversal to use
    */
   protected ClassLister(ClassTraversal traversal) {
     super();
@@ -780,6 +782,7 @@ public class ClassLister
    * Loads the properties from the classpath.
    *
    * @param props	the path, e.g., "nz/ac/waikato/cms/locator/ClassLister.props"
+   * @param defProps 	the default properties to use
    * @return		the properties, the default ones if failed to load
    */
   public static Properties load(String props, Properties defProps) {

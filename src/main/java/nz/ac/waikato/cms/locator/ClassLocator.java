@@ -15,7 +15,7 @@
 
 /*
  * ClassLocator.java
- * Copyright (C) 2005-2021 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2005-2025 University of Waikato, Hamilton, New Zealand
  *
  */
 
@@ -514,6 +514,7 @@ public class ClassLocator
    * @param cls		the class to cache the classnames for
    * @param pkgname	the package name the classes were found in
    * @param classnames	the list of classnames to cache
+   * @param classes 	the associated classes to cache
    */
   protected void addCache(Class cls, String pkgname, List<String> classnames, List<Class> classes) {
     m_CacheNames.put(cls.getName() + "-" + pkgname, classnames);

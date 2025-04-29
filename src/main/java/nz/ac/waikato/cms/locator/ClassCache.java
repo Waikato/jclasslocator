@@ -169,6 +169,8 @@ public class ClassCache
 
   /**
    * Initializes the cache.
+   *
+   * @param traversal the traversal to use
    */
   protected void initialize(ClassTraversal traversal) {
     Listener 	listener;
@@ -252,8 +254,8 @@ public class ClassCache
   /**
    * Returns whether the class is an anonymous one ("...$X" with X being a number).
    *
-   * @param classname
-   * @return
+   * @param classname	the classname to check
+   * @return		true if anonymous class
    */
   public boolean isAnonymous(String classname) {
     return m_AnonymousCheck.matcher(classname).matches();

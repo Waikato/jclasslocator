@@ -15,7 +15,7 @@
 
 /*
  * ClassCompare.java
- * Copyright (C) 2016-2017 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2016-2025 University of Waikato, Hamilton, New Zealand
  */
 package nz.ac.waikato.cms.locator;
 
@@ -30,7 +30,6 @@ import java.util.Comparator;
  * </ul>
  *
  * @author  fracpete (fracpete at waikato dot ac dot nz)
- * @version $Revision: 13612 $
  */
 public class ClassCompare
   implements Comparator<Class>, Serializable {
@@ -87,7 +86,7 @@ public class ClassCompare
    *
    * @param o1		the first class
    * @param o2		the second class
-   * @return		-1 if o1&lt;o2, 0 if o1=o2 and 1 if o1&;gt;o2
+   * @return		-1 if o1&lt;o2, 0 if o1=o2 and 1 if o1&gt;o2
    */
   public int compare(Class o1, Class o2) {
     String        s1;

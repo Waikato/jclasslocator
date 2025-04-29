@@ -15,7 +15,7 @@
 
 /*
  * StringCompare.java
- * Copyright (C) 2005-2017 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2005-2025 University of Waikato, Hamilton, New Zealand
  */
 package nz.ac.waikato.cms.locator;
 
@@ -32,7 +32,6 @@ import java.util.Comparator;
  * </ul>
  *
  * @author  fracpete (fracpete at waikato dot ac dot nz)
- * @version $Revision: 13612 $
  */
 public class StringCompare
   implements Comparator<String>, Serializable {
@@ -90,7 +89,7 @@ public class StringCompare
    *
    * @param o1		the first string
    * @param o2		the second string
-   * @return		-1 if o1&lt;o2, 0 if o1=o2 and 1 if o1&;gt;o2
+   * @return		-1 if o1&lt;o2, 0 if o1=o2 and 1 if o1&gt;o2
    */
   public int compare(String o1, String o2) {
     String        s1;
