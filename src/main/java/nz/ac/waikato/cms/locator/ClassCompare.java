@@ -15,7 +15,7 @@
 
 /*
  * ClassCompare.java
- * Copyright (C) 2016-2025 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2016-2026 University of Waikato, Hamilton, New Zealand
  */
 package nz.ac.waikato.cms.locator;
 
@@ -31,6 +31,7 @@ import java.util.Comparator;
  *
  * @author  fracpete (fracpete at waikato dot ac dot nz)
  */
+@SuppressWarnings("rawtypes")
 public class ClassCompare
   implements Comparator<Class>, Serializable {
 
@@ -57,9 +58,13 @@ public class ClassCompare
    * @return		the padded string
    */
   protected String fillUp(String s, int len) {
-    while (s.length() < len)
-      s += " ";
-    return s;
+    StringBuilder result;
+
+    result = new StringBuilder(s);
+    while (result.length() < len)
+      result.append(" ");
+
+    return result.toString();
   }
 
   /**
@@ -107,11 +112,8 @@ public class ClassCompare
     s2 = fillUp(s2, s1.length());
 
     for (i = 0; i < s1.length(); i++) {
-      // same char?
-      if (s1.charAt(i) == s2.charAt(i)) {
-        result = 0;
-      }
-      else {
+      // not same char?
+      if (s1.charAt(i) != s2.charAt(i)) {
         v1 = charGroup(s1.charAt(i));
         v2 = charGroup(s2.charAt(i));
 

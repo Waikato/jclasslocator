@@ -15,7 +15,7 @@
 
 /*
  * LoggingHelper.java
- * Copyright (C) 2013-2017 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2013-2026 University of Waikato, Hamilton, New Zealand
  */
 package nz.ac.waikato.cms.locator;
 
@@ -25,8 +25,8 @@ import java.util.logging.Level;
  * Helper class for logging related stuff.
  * 
  * @author  fracpete (fracpete at waikato dot ac dot nz)
- * @version $Revision: 13987 $
  */
+@SuppressWarnings("rawtypes")
 public class LoggingHelper {
 
   /** the environment variable suffix of the log level to look for. */

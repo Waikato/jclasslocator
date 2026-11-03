@@ -15,7 +15,7 @@
 
 /*
  * ClassUtils.java
- * Copyright (C) 2017 University of Waikato, Hamilton, NZ
+ * Copyright (C) 2017-2026 University of Waikato, Hamilton, NZ
  */
 
 package nz.ac.waikato.cms.locator;
@@ -27,8 +27,8 @@ import java.util.List;
  * Helper class for class-related operations.
  *
  * @author FracPete (fracpete at waikato dot ac dot nz)
- * @version $Revision$
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class ClassUtils {
 
   /**
@@ -118,7 +118,7 @@ public class ClassUtils {
       for (i = 0; i < Array.getLength(array); i++) {
 	if (i > 0)
 	  result.append(",");
-	result.append("[" + arrayToString(Array.get(array, i)) + "]");
+	result.append("[").append(arrayToString(Array.get(array, i))).append("]");
       }
     }
 
@@ -146,7 +146,7 @@ public class ClassUtils {
    * @return		the generated string
    */
   public static String flatten(List lines, String sep) {
-    return flatten(lines.toArray(new Object[lines.size()]), sep);
+    return flatten(lines.toArray(new Object[0]), sep);
   }
 
   /**

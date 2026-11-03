@@ -15,7 +15,7 @@
 
 /*
  * ClassCache.java
- * Copyright (C) 2010-2022 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2010-2026 University of Waikato, Hamilton, New Zealand
  */
 package nz.ac.waikato.cms.locator;
 
@@ -252,7 +252,7 @@ public class ClassPathTraversal
     
     parts = cp.split(" ");
     for (String part: parts) {
-      if (part.trim().length() == 0)
+      if (part.trim().isEmpty())
 	return;
       if (part.toLowerCase().endsWith(".jar") || !part.equals("."))
         traverseClasspathPart(part, state);
@@ -266,9 +266,9 @@ public class ClassPathTraversal
    * @param state 	the traversal state
    */
   protected void traverseJar(File file, TraversalState state) {
-    JarFile		jar;
-    JarEntry		entry;
-    Enumeration		enm;
+    JarFile			jar;
+    JarEntry			entry;
+    Enumeration<JarEntry>	enm;
 
     if (isLoggingEnabled())
       getLogger().log(Level.INFO, "Analyzing jar: " + file);
@@ -277,7 +277,8 @@ public class ClassPathTraversal
       getLogger().log(Level.WARNING, "Jar does not exist: " + file);
       return;
     }
-    
+
+    jar = null;
     try {
       jar = new JarFile(file);
       enm = jar.entries();
@@ -290,6 +291,15 @@ public class ClassPathTraversal
     }
     catch (Exception e) {
       getLogger().log(Level.SEVERE, "Failed to inspect: " + file, e);
+    }
+    finally {
+      try {
+	if (jar != null)
+	  jar.close();
+      }
+      catch (Exception e) {
+	// ignored
+      }
     }
   }
 
@@ -366,7 +376,7 @@ public class ClassPathTraversal
 
     // determine URLs of classpath
     if (JavaVersion.atLeast9()) {
-      parts = System.getProperty("java.class.path").split(System.getProperty("path.separator"));
+      parts = System.getProperty("java.class.path").split(File.pathSeparator);
       elements = new ArrayList<>();
       for (String p: parts) {
         if (p.endsWith("*")) {

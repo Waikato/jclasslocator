@@ -15,7 +15,7 @@
 
 /*
  * ClassCache.java
- * Copyright (C) 2010-2021 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2010-2026 University of Waikato, Hamilton, New Zealand
  */
 package nz.ac.waikato.cms.locator;
 
@@ -42,6 +42,7 @@ import java.util.regex.Pattern;
  *
  * @author  fracpete (fracpete at waikato dot ac dot nz)
  */
+@SuppressWarnings("rawtypes")
 public class ClassCache
     implements Serializable {
 
@@ -314,7 +315,7 @@ public class ClassCache
     else
       result = new HashSet<>();
 
-    if (excludeAbstract && (result.size() > 0))
+    if (excludeAbstract && !result.isEmpty())
       result.removeAll(m_AbstractClasses);
 
     return result;
@@ -401,7 +402,7 @@ public class ClassCache
     else
       result = new HashSet<>();
 
-    if (excludeAbstract && (result.size() > 0))
+    if (excludeAbstract && !result.isEmpty())
       result.removeAll(m_AbstractClasses);
 
     return result;
@@ -450,7 +451,7 @@ public class ClassCache
     List<URL> partsSorted = new ArrayList<>();
     while (parts.hasNext())
       partsSorted.add(parts.next());
-    Collections.sort(partsSorted, new Comparator<URL>() {
+    partsSorted.sort(new Comparator<URL>() {
       @Override
       public int compare(URL o1, URL o2) {
 	return o1.toExternalForm().compareTo(o2.toExternalForm());
@@ -465,7 +466,7 @@ public class ClassCache
     partsSorted = new ArrayList<>();
     while (parts.hasNext())
       partsSorted.add(parts.next());
-    Collections.sort(partsSorted, new Comparator<URL>() {
+    partsSorted.sort(new Comparator<URL>() {
       @Override
       public int compare(URL o1, URL o2) {
 	return o1.toExternalForm().compareTo(o2.toExternalForm());

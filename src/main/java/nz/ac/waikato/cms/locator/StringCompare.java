@@ -15,7 +15,7 @@
 
 /*
  * StringCompare.java
- * Copyright (C) 2005-2025 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2005-2026 University of Waikato, Hamilton, New Zealand
  */
 package nz.ac.waikato.cms.locator;
 
@@ -60,9 +60,13 @@ public class StringCompare
    * @return		the padded string
    */
   protected String fillUp(String s, int len) {
-    while (s.length() < len)
-      s += " ";
-    return s;
+    StringBuilder result;
+
+    result = new StringBuilder(s);
+    while (result.length() < len)
+      result.append(" ");
+
+    return result.toString();
   }
 
   /**
@@ -110,11 +114,8 @@ public class StringCompare
     s2 = fillUp(s2, s1.length());
 
     for (i = 0; i < s1.length(); i++) {
-      // same char?
-      if (s1.charAt(i) == s2.charAt(i)) {
-        result = 0;
-      }
-      else {
+      // not same char?
+      if (s1.charAt(i) != s2.charAt(i)) {
         v1 = charGroup(s1.charAt(i));
         v2 = charGroup(s2.charAt(i));
 
