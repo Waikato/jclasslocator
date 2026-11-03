@@ -29,6 +29,7 @@ import java.util.Properties;
  *
  * @author FracPete (fracpete at waikato dot ac dot nz)
  */
+@SuppressWarnings("rawtypes")
 public class ClassListerExample {
 
   public static void main(String[] args) {
@@ -64,9 +65,9 @@ public class ClassListerExample {
       System.out.println("- " + cls.getName());
 
     // toPackages
-    System.out.println("\ntoPackages:\n" + lister.toPackages());
+    System.out.println("\ntoPackages:\n" + lister.packagesToProperties());
 
     // toProperties
-    System.out.println("\ntoProperties:\n" + lister.toProperties());
+    System.out.println("\ntoProperties:\n" + lister.hierarchiesToProperties());
   }
 }

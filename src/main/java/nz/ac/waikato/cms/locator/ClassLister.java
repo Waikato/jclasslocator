@@ -15,7 +15,7 @@
 
 /*
  * ClassLister.java
- * Copyright (C) 2007-2025 University of Waikato, Hamilton, New Zealand
+ * Copyright (C) 2007-2026 University of Waikato, Hamilton, New Zealand
  */
 
 package nz.ac.waikato.cms.locator;
@@ -68,6 +68,7 @@ import java.util.regex.Pattern;
  *
  * @author  fracpete (fracpete at waikato dot ac dot nz)
  */
+@SuppressWarnings("rawtypes")
 public class ClassLister
     implements Serializable {
 
@@ -491,15 +492,25 @@ public class ClassLister
    * @return		the classnames of the derived classes
    */
   public String[] getClassnames(Class superclass) {
+    return getClassnames(superclass.getName());
+  }
+
+  /**
+   * Returns all the classnames that were found for this superclass.
+   *
+   * @param superclass	the superclass to return the derived classes for
+   * @return		the classnames of the derived classes
+   */
+  public String[] getClassnames(String superclass) {
     List<String>	list;
 
-    updateCaches(superclass.getName());
+    updateCaches(superclass);
 
-    list = m_ListNames.get(superclass.getName());
+    list = m_ListNames.get(superclass);
     if (list == null)
       return new String[0];
     else
-      return list.toArray(new String[list.size()]);
+      return list.toArray(new String[0]);
   }
 
   /**
@@ -529,7 +540,7 @@ public class ClassLister
     if (list == null)
       return new Class[0];
     else
-      return list.toArray(new Class[list.size()]);
+      return list.toArray(new Class[0]);
   }
 
   /**
@@ -539,8 +550,6 @@ public class ClassLister
    * @return		the superclass(es)
    */
   public String[] getSuperclasses(Class cls) {
-    updateCaches();
-
     return getSuperclasses(cls.getName());
   }
 
@@ -565,7 +574,7 @@ public class ClassLister
     if (result.size() > 1)
       Collections.sort(result);
 
-    return result.toArray(new String[result.size()]);
+    return result.toArray(new String[0]);
   }
 
   /**
@@ -607,7 +616,7 @@ public class ClassLister
     String	packages;
 
     packages = m_Packages.getProperty(superclass);
-    if ((packages == null) || (packages.length() == 0))
+    if ((packages == null) || packages.isEmpty())
       return new String[0];
     else
       return packages.split(",");
@@ -670,7 +679,18 @@ public class ClassLister
    *
    * @return		the generated properties
    */
+  @Deprecated
   public Properties toProperties() {
+    return hierarchiesToProperties();
+  }
+
+  /**
+   * Returns the class hierarchies as properties object, with the superclasses
+   * as keys and the values representing comma-separated lists of classnames.
+   *
+   * @return		the generated properties
+   */
+  public Properties hierarchiesToProperties() {
     Properties		result;
     StringBuilder	classes;
 
@@ -691,12 +711,41 @@ public class ClassLister
   }
 
   /**
+   * Returns the class hierarchies as map object, with the superclasses
+   * as keys and the values representing lists of classnames.
+   *
+   * @return		the generated map
+   */
+  public Map<String,List<String>> hierarchiesToMap() {
+    Map<String,List<String>>	result;
+
+    updateCaches();
+
+    result = new HashMap<>();
+    for (String superclass: getSuperclasses())
+      result.put(superclass, Arrays.asList(getClassnames(superclass)));
+
+    return result;
+  }
+
+  /**
    * Returns the class hierarchies as properties object, with the superclasses
    * as keys and the values representing comma-separated lists of packages.
    *
    * @return		the generated properties
    */
+  @Deprecated
   public Properties toPackages() {
+    return packagesToProperties();
+  }
+
+  /**
+   * Returns the class hierarchies as properties object, with the superclasses
+   * as keys and the values representing comma-separated lists of packages.
+   *
+   * @return		the generated properties
+   */
+  public Properties packagesToProperties() {
     Properties		result;
     StringBuilder 	pkgs;
 
@@ -712,6 +761,24 @@ public class ClassLister
       }
       result.setProperty(superclass, pkgs.toString());
     }
+
+    return result;
+  }
+
+  /**
+   * Returns the class hierarchies as map object, with the superclasses
+   * as keys and the values representing lists of packages.
+   *
+   * @return		the generated map
+   */
+  public Map<String,List<String>> packagesToMap() {
+    Map<String,List<String>>	result;
+
+    updateCaches();
+
+    result = new HashMap<>();
+    for (String superclass: getSuperclasses())
+      result.put(superclass, new ArrayList<>(Arrays.asList(getPackages(superclass))));
 
     return result;
   }
