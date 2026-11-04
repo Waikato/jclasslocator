@@ -4,7 +4,10 @@ Java library for analyzing the classpath of an application, e.g., used to
 determine dynamic class hierarchies (simply add a jar with additional classes
 in packages that the `ClassLister` monitors and they are automatically located).  
 
-Used by [ADAMS](https://adams.cms.waikato.ac.nz/).
+Used by:
+* [ADAMS](https://adams.cms.waikato.ac.nz/)
+* [MOA](https://moa.cms.waikato.ac.nz/)
+
 
 ## Class hierarchies
 
@@ -17,6 +20,7 @@ Here is the basic format:
 ```INI
 class.name=package1,package2,...
 ```
+
 
 ## Blacklisting
 
@@ -32,6 +36,7 @@ Here is the basic format:
 class.name=regexp1,regexp2,...
 ```
 
+
 ## Example (manual setup)
 
 The following code is taken from `nz.ac.waikato.cms.locator.example.ClassListerExample`:
@@ -40,33 +45,38 @@ The following code is taken from `nz.ac.waikato.cms.locator.example.ClassListerE
 import nz.ac.waikato.cms.locator.ClassLister;
 import java.util.Properties;
 
-// configuring the class hierarchies
-Properties pkgs = new Properties();
-pkgs.put(AbstractAncestor.class.getName(), "nz.ac.waikato.cms.locator.example.pkgA,nz.ac.waikato.cms.locator.example.pkgB");
-pkgs.put(SomeInterface.class.getName(), "nz.ac.waikato.cms.locator.example.pkgA,nz.ac.waikato.cms.locator.example.pkgB");
+public class Test {
 
-// blacklisted classes
-Properties black = new Properties();
-black.put(AbstractAncestor.class.getName(), ".*C");  // anything that ends with a capital "C"
-black.put(SomeInterface.class.getName(), "nz.ac.waikato.cms.locator.example.pkgB.InterfaceImplInternal");  // specific class
+  public static void main(String[] args) {
+    // configuring the class hierarchies
+    Properties pkgs = new Properties();
+    pkgs.put(AbstractAncestor.class.getName(), "nz.ac.waikato.cms.locator.example.pkgA,nz.ac.waikato.cms.locator.example.pkgB");
+    pkgs.put(SomeInterface.class.getName(), "nz.ac.waikato.cms.locator.example.pkgA,nz.ac.waikato.cms.locator.example.pkgB");
 
-// initialize
-ClassLister lister = ClassLister.getSingleton();
-lister.setPackages(pkgs);
-lister.setBlacklist(black);
-lister.initialize();
+    // blacklisted classes
+    Properties black = new Properties();
+    black.put(AbstractAncestor.class.getName(), ".*C");  // anything that ends with a capital "C"
+    black.put(SomeInterface.class.getName(), "nz.ac.waikato.cms.locator.example.pkgB.InterfaceImplInternal");  // specific class
 
-Class[] classes;
-// abstract class
-System.out.println("\nAbstract super class: " + AbstractAncestor.class.getName());
-classes = lister.getClasses(AbstractAncestor.class);
-for (Class cls: classes)
-  System.out.println("- " + cls.getName());
-// interface
-System.out.println("\nInterface: " + SomeInterface.class.getName());
-classes = lister.getClasses(SomeInterface.class);
-for (Class cls: classes)
-  System.out.println("- " + cls.getName());
+    // initialize
+    ClassLister lister = ClassLister.getSingleton();
+    lister.setPackages(pkgs);
+    lister.setBlacklist(black);
+    lister.initialize();
+
+    Class[] classes;
+    // abstract class
+    System.out.println("\nAbstract super class: " + AbstractAncestor.class.getName());
+    classes = lister.getClasses(AbstractAncestor.class);
+    for (Class cls : classes)
+      System.out.println("- " + cls.getName());
+    // interface
+    System.out.println("\nInterface: " + SomeInterface.class.getName());
+    classes = lister.getClasses(SomeInterface.class);
+    for (Class cls : classes)
+      System.out.println("- " + cls.getName());
+  }
+}
 ```
 
 Generates this output:
@@ -81,6 +91,7 @@ Interface: nz.ac.waikato.cms.locator.example.SomeInterface
 - nz.ac.waikato.cms.locator.example.pkgB.InterfaceImplB
 - nz.ac.waikato.cms.locator.example.pkgB.InterfaceImplC
 ```
+
 
 ## Example (using .props files)
 
@@ -109,27 +120,32 @@ nz.ac.waikato.cms.locator.example.SomeInterface=nz.ac.waikato.cms.locator.exampl
 import nz.ac.waikato.cms.locator.ClassLister;
 import java.util.Properties;
 
-// loading the props files (path might need adjusting)
-Properties pkgs = ClassLister.load("ClassLister.props");
-Properties black = ClassLister.load("ClassLister.blacklist");
+public class Test {
 
-// initialize
-ClassLister lister = ClassLister.getSingleton();
-lister.setPackages(pkgs);
-lister.setBlacklist(black);
-lister.initialize();
+  public static void main(String[] args) {
+    // loading the props files (path might need adjusting)
+    Properties pkgs = ClassLister.load("ClassLister.props");
+    Properties black = ClassLister.load("ClassLister.blacklist");
 
-Class[] classes;
-// abstract class
-System.out.println("\nAbstract super class: " + AbstractAncestor.class.getName());
-classes = lister.getClasses(AbstractAncestor.class);
-for (Class cls: classes)
-  System.out.println("- " + cls.getName());
-// interface
-System.out.println("\nInterface: " + SomeInterface.class.getName());
-classes = lister.getClasses(SomeInterface.class);
-for (Class cls: classes)
-  System.out.println("- " + cls.getName());
+    // initialize
+    ClassLister lister = ClassLister.getSingleton();
+    lister.setPackages(pkgs);
+    lister.setBlacklist(black);
+    lister.initialize();
+
+    Class[] classes;
+    // abstract class
+    System.out.println("\nAbstract super class: " + AbstractAncestor.class.getName());
+    classes = lister.getClasses(AbstractAncestor.class);
+    for (Class cls : classes)
+      System.out.println("- " + cls.getName());
+    // interface
+    System.out.println("\nInterface: " + SomeInterface.class.getName());
+    classes = lister.getClasses(SomeInterface.class);
+    for (Class cls : classes)
+      System.out.println("- " + cls.getName());
+  }
+}
 ```
 
 
@@ -148,6 +164,7 @@ These environment variables can take the following values:
 ```
 {OFF|SEVERE|WARNING|INFO|CONFIG|FINE|FINER|FINEST}
 ```
+
 
 ## No classpath
 
@@ -197,12 +214,18 @@ comma-separated list of classnames.
 
 ## Other useful methods
 
-* `ClassLister.toProperties()` - returns the class hierarchies as a 
+* `ClassLister.hierarchiesToProperties()` - returns the class hierarchies as a 
   `java.util.Properties` object. The key of a property is the superclass name
   and the associated value is the comma-separated list of classnames.
-* `ClassLister.toPackages()` - returns the class hierarchies as a 
+* `ClassLister.hierarchiesToMap()` - returns the class hierarchies as a
+  `java.util.Map` object. The keys of the map are the superclass names
+  and the associated values are List object with the classnames.
+* `ClassLister.packagesToProperties()` - returns the class hierarchies as a 
   `java.util.Properties` object. The key of a property is the superclass name
   and the associated value is the comma-separated list of packages.
+* `ClassLister.packagesToMap()` - returns the class hierarchies as a
+  `java.util.Map` object. The keys are the superclass names
+  and the associated values are List objects with the packages.
 
 
 ## Maven
@@ -213,6 +236,6 @@ Add the following dependency to your `pom.xml`:
     <dependency>
       <groupId>com.github.waikato</groupId>
       <artifactId>jclasslocator</artifactId>
-      <version>0.0.23</version>
+      <version>0.0.24</version>
     </dependency>
 ```
