@@ -351,6 +351,10 @@ public class ClassLister
 	getLogger().log(Level.SEVERE, "Failed to blacklist classes for superclass '" +  superclass + "':", ex);
       }
     }
+
+    // add packages
+    m_Packages.setProperty(superclass, ClassUtils.flatten(packages, ","));
+
     // create class list
     updateClassnames(m_CacheNames, superclass, new HashSet<>(names));
     updateClassnames(m_ListNames, superclass, new ArrayList<>(names));
@@ -370,6 +374,9 @@ public class ClassLister
     String[]		patterns;
     int			i;
     Pattern		p;
+    Set<String>		packages;
+
+    packages = new HashSet<>();
 
     // remove blacklisted classes
     classList = new ArrayList<>(Arrays.asList(classes));
@@ -402,8 +409,13 @@ public class ClassLister
     }
 
     classNames = new ArrayList<>();
-    for (Class cls: classList)
+    for (Class cls: classList) {
       classNames.add(cls.getName());
+      packages.add(cls.getPackage().getName());
+    }
+
+    // update packages
+    m_Packages.setProperty(superclass.getName(), ClassUtils.flatten(packages.toArray(new String[0]), ","));
 
     // create class list
     updateClassnames(m_CacheNames, superclass.getName(), new HashSet<>(classNames));
